@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#DFE3D2">
-<meta name="description" content="TradeLedger — a daily trading P&L journal. Track net profit per instrument, equity curve, month-by-month review, CSV and JSON backup. Your data stays in your browser.">
+<meta name="theme-color" content="#E2E5D4">
+<meta name="description" content="TradeLedger — a daily trading P&L journal. Post your day in seconds: net after charges, equity curve, a year of green and red squares, month-by-month review. Free account with private cloud sync.">
 <title>TradeLedger — P&L Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,48 +21,48 @@
 try{
   let t=localStorage.getItem('tradeledger_theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'night':'day');
   document.documentElement.dataset.theme=t;
-  document.querySelector('meta[name=theme-color]').content=t==='night'?'#10151A':'#DFE3D2';
+  document.querySelector('meta[name=theme-color]').content=t==='night'?'#0D1216':'#E2E5D4';
 }catch(e){}
 </script>
 <style>
 :root{
   color-scheme:light;
-  --desk:#DFE3D2; --sheet:#F7F8F0; --paper:#FFFFFF;
-  --ink:#22333B; --ink-soft:#3C4B44; --muted:#5F6E60; --faint:#8A9683;
-  --rule:#C7CFB4; --rule-strong:#22333B;
-  --loss:#B23A28; --win:#1E6B4E;
-  --win-soft:#CFE0D2; --loss-soft:#EFD3C8;
-  --sheet-border:#B9C2A6; --btn-line:#B9C2A6; --dash:#A9B598;
-  --leader:#A3AF93; --row-line:#DDE2CE;
-  --field-line:rgba(34,51,59,.27); --field-line-strong:rgba(34,51,59,.55);
-  --tint-hover:#22333B0D; --tint-row:#22333B06;
-  --cell-line:#22333B12; --sel:#22333B22;
-  --heat-empty:#E3E7D2;
-  --heat-w1:#D6E4D3;--heat-w2:#A8CBAF;--heat-w3:#5FA381;--heat-w4:#1E6B4E;
-  --heat-l1:#EFD6CB;--heat-l2:#E0A791;--heat-l3:#CE6B50;--heat-l4:#B23A28;
-  --hatch-bg:#E0A791;
-  --chip-soft:#C9D2BC; --chip-pos:#8FD4B4; --chip-neg:#F0A99A;
-  --shadow-card:0 2px 6px #22333B14,0 18px 44px #22333B1A;
-  --shadow-modal:0 24px 60px #22333B40;
-  --shadow-toast:0 14px 36px #22333B33;
+  --desk:#E2E5D4; --sheet:#F8F9F1; --paper:#FFFFFF;
+  --ink:#1F2D33; --ink-soft:#3A4944; --muted:#5D6C60; --faint:#87937F;
+  --rule:#C6CEB2; --rule-strong:#1F2D33;
+  --loss:#B03A26; --win:#196B4A;
+  --win-soft:#CFE0D0; --loss-soft:#EFD2C6;
+  --sheet-border:#B7C0A4; --btn-line:#B7C0A4; --dash:#A7B396;
+  --leader:#A0AC90; --row-line:#DBE0CC;
+  --field-line:rgba(31,45,51,.28); --field-line-strong:rgba(31,45,51,.55);
+  --tint-hover:#1F2D330D; --tint-row:#1F2D3306;
+  --cell-line:#1F2D3312; --sel:#1F2D3322;
+  --heat-empty:#E2E6D1;
+  --heat-w1:#D3E2D0;--heat-w2:#A5C9AC;--heat-w3:#5AA07D;--heat-w4:#196B4A;
+  --heat-l1:#EFD4C8;--heat-l2:#DFA48E;--heat-l3:#CB6A4E;--heat-l4:#B03A26;
+  --hatch-bg:#DDA28C;
+  --chip-soft:#C7D0BA; --chip-pos:#8DD3B2; --chip-neg:#F0A89A;
+  --shadow-card:0 2px 6px #1F2D3314,0 18px 44px #1F2D331A;
+  --shadow-modal:0 24px 60px #1F2D3340;
+  --shadow-toast:0 14px 36px #1F2D3333;
 }
 html[data-theme="night"]{
   color-scheme:dark;
-  --desk:#10151A; --sheet:#1B2229; --paper:#232B33;
-  --ink:#E8E4D8; --ink-soft:#C2C8BC; --muted:#97A39B; --faint:#6E7A74;
-  --rule:#2E3840; --rule-strong:#59646C;
-  --loss:#FF7A66; --win:#4CC38A;
+  --desk:#0D1216; --sheet:#161D23; --paper:#1E262E;
+  --ink:#EAE6DA; --ink-soft:#C4CABE; --muted:#96A29A; --faint:#66716B;
+  --rule:#2B353D; --rule-strong:#5A656D;
+  --loss:#FF7B67; --win:#4EC48C;
   --win-soft:#1E3A30; --loss-soft:#3A2522;
-  --sheet-border:#2E3840; --btn-line:#3D4850; --dash:#4A555C;
-  --leader:#4E5A60; --row-line:#2A343B;
-  --field-line:rgba(232,228,216,.28); --field-line-strong:rgba(232,228,216,.6);
-  --tint-hover:#E8E4D80D; --tint-row:#E8E4D806;
-  --cell-line:#00000055; --sel:#E8E4D822;
-  --heat-empty:#232B33;
-  --heat-w1:#20342C;--heat-w2:#285743;--heat-w3:#2F7D57;--heat-w4:#4CC38A;
+  --sheet-border:#2B353D; --btn-line:#3A454D; --dash:#47525A;
+  --leader:#4B575E; --row-line:#28323A;
+  --field-line:rgba(234,230,218,.28); --field-line-strong:rgba(234,230,218,.6);
+  --tint-hover:#EAE6DA0D; --tint-row:#EAE6DA06;
+  --cell-line:#00000055; --sel:#EAE6DA22;
+  --heat-empty:#1E262E;
+  --heat-w1:#20342C;--heat-w2:#285743;--heat-w3:#2F7D57;--heat-w4:#4EC48C;
   --heat-l1:#3A2522;--heat-l2:#6B352C;--heat-l3:#A34838;--heat-l4:#E06850;
   --hatch-bg:#5B3129;
-  --chip-soft:#56645E; --chip-pos:#1E6B4E; --chip-neg:#B23A28;
+  --chip-soft:#56645E; --chip-pos:#196B4A; --chip-neg:#B03A26;
   --shadow-card:0 2px 6px #00000059,0 18px 44px #00000080;
   --shadow-modal:0 24px 60px #000000B3;
   --shadow-toast:0 14px 36px #00000080;
@@ -87,40 +87,101 @@ button{cursor:pointer;background:none;border:0;padding:0}
 @media(max-width:1300px){.sheet{margin:0 auto 40px;border-radius:0;border-left:0;border-right:0}}
 @media(max-width:720px){.sheet{padding:0 20px 36px}}
 
-/* ── Document header ─────────────────────────── */
-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:30px 0 22px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:14px}
-.mark{width:40px;height:40px;background:var(--ink);color:var(--sheet);border-radius:6px;
-  display:grid;place-items:center;font:600 17px/1 Newsreader,Georgia,serif;letter-spacing:.02em}
-.brand h1{margin:0;font:600 22px/1.1 Newsreader,Georgia,serif;letter-spacing:-.01em}
-.brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
-.actions{display:flex;gap:10px;flex-wrap:wrap}
+/* ── Buttons ─────────────────────────────────── */
 .btn{border:1.5px solid var(--ink);border-radius:4px;background:var(--sheet);color:var(--ink);
   padding:9px 15px;font-size:13px;font-weight:600;transition:background .15s,color .15s}
 .btn:hover{background:var(--ink);color:var(--sheet)}
+.btn:active{transform:translateY(1px)}
 .btn.primary{background:var(--ink);color:var(--sheet)}
 .btn.primary:hover{background:var(--ink-soft);border-color:var(--ink-soft)}
 .btn.danger{border-color:var(--loss);color:var(--loss);background:var(--sheet)}
 .btn.danger:hover{background:var(--loss);color:var(--sheet)}
 .btn.small{padding:6px 11px;font-size:12px}
 .btn.icon{width:41px;padding:9px 0;text-align:center;font-size:15px}
-a.btn{text-decoration:none}
+.btn.big{padding:12px 22px;font-size:14px}
 .btn[disabled]{opacity:.35;pointer-events:none}
+a.btn{text-decoration:none}
 .gchip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px}
 .gchip img{width:27px;height:27px;border-radius:50%;background:var(--paper);border:1px solid var(--btn-line)}
 .gchip span{font-size:12.5px;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .glogo{margin-right:4px;flex:none}
 
+/* ═════════════ LANDING ═════════════ */
+.land-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:30px 0 24px;flex-wrap:wrap}
+.land-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .docrule{border:0;border-top:2.5px solid var(--rule-strong);margin:0}
 
-/* ── View tabs ───────────────────────────────── */
+.land-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;padding:64px 0 58px;align-items:center}
+@media(max-width:980px){.land-hero{grid-template-columns:1fr;gap:40px;padding:44px 0 40px}}
+.land-h1{margin:0 0 18px;font:600 clamp(38px,4.8vw,54px)/1.08 Newsreader,Georgia,serif;letter-spacing:-.02em}
+.land-sub{margin:0 0 30px;max-width:52ch;color:var(--muted);font-size:16px;line-height:1.65}
+.land-ctas{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.land-try{font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.land-try:hover{color:var(--ink)}
+.land-note{margin-top:18px;font-size:12.5px;color:var(--faint)}
+
+/* the posted entry — the hero's right half */
+.postcard{border:1.5px solid var(--ink);border-radius:6px;background:var(--paper);
+  padding:26px 28px 22px;box-shadow:var(--shadow-card)}
+.post-date{font:italic 500 15px Newsreader,Georgia,serif;color:var(--muted);padding-bottom:12px}
+.post-line{display:flex;align-items:baseline;gap:10px;padding:9px 0}
+.post-line span{font-size:14px;color:var(--ink-soft)}
+.post-line i{flex:1;border-bottom:1.5px dotted var(--leader);transform:translateY(-4px);min-width:24px}
+.post-line b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.post-net{margin-top:14px;padding-top:16px;border-top:2px solid var(--ink);
+  display:flex;align-items:center;justify-content:space-between;gap:14px}
+.post-net span{font-size:13px;color:var(--muted)}
+.post-net b{font:600 34px/1 Newsreader,Georgia,serif;letter-spacing:-.02em;color:var(--win);
+  font-variant-numeric:tabular-nums}
+.post-cap{margin-top:16px;font:italic 400 13.5px/1.5 Newsreader,Georgia,serif;color:var(--faint)}
+.stamp{border:2.5px solid currentColor;border-radius:8px;padding:.32em .75em;
+  font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  transform:rotate(-3deg);color:var(--faint)}
+.stamp.win{color:var(--win)}
+.stamp.loss{color:var(--loss)}
+@media(max-width:980px){.postcard{max-width:480px}}
+
+/* capabilities as ledger line-items */
+.land-feats{padding:8px 0 54px}
+.land-feats h2{margin:0 0 6px;font:600 26px/1.2 Newsreader,Georgia,serif;letter-spacing:-.01em}
+.land-feats>p{margin:0 0 22px;color:var(--muted);font-size:14px}
+.feat{max-width:860px}
+.lrow{display:flex;align-items:baseline;gap:10px;padding:11px 0;border-bottom:1px solid var(--row-line)}
+.lrow:last-child{border-bottom:0}
+.lrow span{font-size:14.5px;color:var(--ink-soft)}
+.lrow span b{font-weight:600;color:var(--ink)}
+.leader{flex:1;border-bottom:1.5px dotted var(--leader);transform:translateY(-4px);min-width:24px}
+.lrow b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lrow em{font:italic 400 13.5px Newsreader,Georgia,serif;color:var(--muted);white-space:nowrap}
+
+.land-cloud{border-top:2.5px solid var(--rule-strong);border-bottom:1px solid var(--rule);
+  padding:40px 0 44px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
+.land-cloud h2{margin:0 0 6px;font:600 24px/1.25 Newsreader,Georgia,serif;letter-spacing:-.01em}
+.land-cloud p{margin:0;color:var(--muted);font-size:14px;max-width:58ch}
+
+.land-foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);
+  font-size:12px;color:var(--faint);text-align:center;line-height:1.8}
+.land-foot b{color:var(--muted);font-weight:600}
+.land-foot a{color:var(--muted)}
+
+/* ═════════════ APP ═════════════ */
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:30px 0 22px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.mark{width:40px;height:40px;background:var(--ink);color:var(--sheet);border-radius:6px;
+  display:grid;place-items:center;font:600 17px/1 Newsreader,Georgia,serif;letter-spacing:.02em}
+.brand h1{margin:0;font:600 22px/1.1 Newsreader,Georgia,serif;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+@media(max-width:560px){.brand p{display:none}}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* view tabs */
 .viewtabs{display:flex;gap:26px;border-bottom:1px solid var(--rule)}
 .viewtab{padding:13px 2px 12px;font-size:14px;font-weight:600;color:var(--muted);
   border-bottom:2.5px solid transparent;margin-bottom:-1px;transition:color .15s}
 .viewtab:hover{color:var(--ink)}
 .viewtab.active{color:var(--ink);border-bottom-color:var(--rule-strong)}
 
-/* ── Hero: the verdict ───────────────────────── */
+/* hero verdict */
 .hero{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding:36px 0 30px;flex-wrap:wrap}
 .hero-label{font-size:13px;color:var(--muted);margin-bottom:6px}
 .hero-line{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
@@ -128,11 +189,6 @@ a.btn{text-decoration:none}
   font-variant-numeric:tabular-nums}
 .hero-net.positive{color:var(--win)}
 .hero-net.negative{color:var(--loss)}
-.stamp{border:2.5px solid currentColor;border-radius:8px;padding:.32em .75em;
-  font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  transform:rotate(-3deg);color:var(--faint)}
-.stamp.win{color:var(--win)}
-.stamp.loss{color:var(--loss)}
 @keyframes thump{from{transform:rotate(-3deg) scale(1.28);opacity:0}55%{opacity:1}to{transform:rotate(-3deg) scale(1)}}
 .stamp.thump{animation:thump .38s ease-out both}
 .hero-foot{margin-top:10px;font-size:12.5px;color:var(--muted)}
@@ -143,7 +199,7 @@ a.btn{text-decoration:none}
 .ptab.active{background:var(--ink);color:var(--sheet)}
 @media(max-width:720px){.hero{padding:26px 0 22px}.ptabs{width:100%}.ptab{flex:1;text-align:center;padding:9px 6px}}
 
-/* ── Summary strip ───────────────────────────── */
+/* summary strip */
 .strip{display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .strip>div{padding:18px 22px 16px;border-left:1px solid var(--rule);min-width:0}
 .strip>div:first-child{border-left:0;padding-left:0}
@@ -165,7 +221,7 @@ a.btn{text-decoration:none}
   .strip>div:nth-child(2n+1){border-left:0;padding-left:0}
 }
 
-/* ── Sections ────────────────────────────────── */
+/* sections */
 section{padding-top:34px}
 .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
 .sec-head h2{margin:0;font:600 21px/1.2 Newsreader,Georgia,serif;letter-spacing:-.01em}
@@ -202,7 +258,7 @@ section{padding-top:34px}
 .band{display:grid;grid-template-columns:1.55fr 1fr;gap:44px}
 @media(max-width:900px){.band{grid-template-columns:1fr;gap:34px}}
 
-/* chart */
+/* daily bars chart */
 .chart{height:216px;display:flex;align-items:end;gap:7px;padding:16px 2px 26px;position:relative;
   border-bottom:2px solid var(--ink)}
 .bar-col{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;position:relative;min-width:8px}
@@ -226,14 +282,6 @@ section{padding-top:34px}
 .curve-axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);margin-top:6px}
 .curve-empty{border:1.5px dashed var(--dash);border-radius:5px;padding:44px 24px;text-align:center;
   color:var(--muted);font:italic 500 15.5px/1.6 Newsreader,Georgia,serif}
-
-/* breakdown with dotted leaders */
-.lrow{display:flex;align-items:baseline;gap:10px;padding:10px 0;border-bottom:1px solid var(--row-line)}
-.lrow:last-child{border-bottom:0}
-.lrow span{font-size:13.5px;color:var(--ink-soft)}
-.leader{flex:1;border-bottom:1.5px dotted var(--leader);transform:translateY(-4px);min-width:24px}
-.lrow b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.lrow b.neg{color:var(--loss)}
 
 /* tables */
 .table-scroll{overflow-x:auto}
@@ -266,7 +314,7 @@ td small{font-size:10.5px;color:var(--faint)}
   color:var(--muted);font-size:12px}
 .pager .btns{display:flex;gap:8px}
 
-/* toolbar — paper-form fields */
+/* paper-form fields — app-wide */
 .toolbar{display:flex;gap:18px;align-items:end;flex-wrap:wrap;padding:6px 0 18px;border-bottom:1px solid var(--rule)}
 .toolbar .f{display:flex;flex-direction:column;gap:4px}
 .toolbar label{font-size:10.5px;color:var(--faint);font-weight:600}
@@ -310,19 +358,22 @@ td small{font-size:10.5px;color:var(--faint)}
   .annex>div:first-child{border-top:0}}
 
 /* modal */
-.modal-backdrop{position:fixed;inset:0;background:#22333B55;display:none;place-items:center;padding:18px;z-index:5}
+.modal-backdrop{position:fixed;inset:0;background:#1F2D3355;display:none;place-items:center;padding:18px;z-index:5}
 html[data-theme="night"] .modal-backdrop{background:#000000AA}
 .modal-backdrop.show{display:grid}
 .modal{width:min(440px,100%);background:var(--sheet);border:1.5px solid var(--ink);border-radius:6px;
   padding:26px;box-shadow:var(--shadow-modal)}
+@media(max-width:480px){.modal{padding:20px 18px}.modal-backdrop{padding:10px}}
 .modal h3{margin:0 0 4px;font:600 20px/1.2 Newsreader,Georgia,serif}
 .modal p{margin:0 0 18px;color:var(--muted);font-size:12.5px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field.full{grid-column:1/-1}
 .field label{font-size:12px;font-weight:600;color:var(--ink-soft)}
-.field input{width:100%;background:var(--paper);border:1px solid var(--btn-line);border-radius:4px;padding:10px 11px;outline:none}
-.field input:focus{border-color:var(--ink)}
+.field input{width:100%;background:transparent;border:0;border-bottom:1.5px solid var(--field-line);
+  border-radius:0;padding:8px 2px;outline:none}
+.field input:hover{border-bottom-color:var(--field-line-strong)}
+.field input:focus{border-bottom-color:var(--ink)}
 .hint{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.5}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
 
@@ -357,7 +408,74 @@ footer b{color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
-<div class="sheet">
+
+<!-- ══════════════════ LANDING (first visit) ══════════════════ -->
+<div class="sheet" id="landing" hidden>
+  <div class="land-head">
+    <div class="brand">
+      <div class="mark">TL</div>
+      <div><h1 style="font:600 22px/1.1 Newsreader,Georgia,serif;margin:0">TradeLedger</h1><p style="margin:2px 0 0;font-size:12.5px;color:var(--muted)">A daily P&amp;L journal, kept in ink</p></div>
+    </div>
+    <div class="land-actions">
+      <button class="btn icon" id="themeLand" aria-label="Switch between day and night ink" title="Day / night ink">☾</button>
+      <button class="btn" id="ldSignin">Sign in</button>
+      <button class="btn primary" id="ldCreate">Create free account</button>
+    </div>
+  </div>
+  <hr class="docrule">
+
+  <div class="land-hero">
+    <div>
+      <h2 class="land-h1">Every trading day,<br>kept in ink.</h2>
+      <p class="land-sub">TradeLedger is a profit-and-loss journal for daily traders. Post your day in ten seconds — the ledger does the arithmetic, draws your equity curve, and keeps the score across devices.</p>
+      <div class="land-ctas">
+        <button class="btn primary big" id="ldCreate2">Create a free account</button>
+        <button class="land-try" id="ldTry">Try it first, no account</button>
+      </div>
+      <p class="land-note">Free, no ads. Your ledger stays exportable — CSV and JSON, always.</p>
+    </div>
+    <div>
+      <div class="postcard">
+        <div class="post-date">Friday, 14 November</div>
+        <div class="post-line"><span>NIFTY</span><i></i><b>₹2,850</b></div>
+        <div class="post-line"><span>BITCOINUSDT</span><i></i><b class="negative">−₹1,120</b></div>
+        <div class="post-line"><span>CRUDEOIL</span><i></i><b>₹640</b></div>
+        <div class="post-net"><span>Net for the day, after charges</span><b>₹2,370</b></div>
+        <div class="stamp win" style="margin-top:16px;display:inline-block">Net profit</div>
+        <p class="post-cap">an entry, as the ledger keeps it</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="land-feats">
+    <h2>What the ledger does for you</h2>
+    <p>One entry per day. Everything else is drawn, summed, and kept — like a proper ledger should.</p>
+    <div class="feat">
+      <div class="lrow"><span><b>Net after charges</b></span><i class="leader"></i><em>gross minus charges, in ink</em></div>
+      <div class="lrow"><span><b>Equity curve</b></span><i class="leader"></i><em>cumulative P&amp;L, hover any point</em></div>
+      <div class="lrow"><span><b>A year of squares</b></span><i class="leader"></i><em>heatmap of green and red days</em></div>
+      <div class="lrow"><span><b>Month by month</b></span><i class="leader"></i><em>review ledger with win rate</em></div>
+      <div class="lrow"><span><b>Streaks &amp; drawdown</b></span><i class="leader"></i><em>the numbers behind the mood</em></div>
+      <div class="lrow"><span><b>Full editing</b></span><i class="leader"></i><em>sort, filter, fix mistakes, undo</em></div>
+      <div class="lrow"><span><b>Exports</b></span><i class="leader"></i><em>CSV for spreadsheets, JSON backup</em></div>
+    </div>
+  </div>
+
+  <div class="land-cloud">
+    <div>
+      <h2>Sign in once. Every device stays current.</h2>
+      <p>Create a free account and your ledger lives in a private cloud database only you can read — edits appear on your phone and laptop live, and everything still works offline.</p>
+    </div>
+    <button class="btn primary big" id="ldCreate3">Create your account</button>
+  </div>
+
+  <div class="land-foot">
+    TradeLedger · a tracking journal, not investment advice · <b>open source, MIT</b> · by Ritik Kumar · <a href="https://github.com/R1T1KKUMAR/tradeledger">GitHub</a>
+  </div>
+</div>
+
+<!-- ══════════════════ APP ══════════════════ -->
+<div class="sheet" id="app">
 <header>
   <div class="brand">
     <div class="mark">TL</div>
@@ -367,7 +485,7 @@ footer b{color:var(--muted);font-weight:600}
     <button class="btn icon" id="themeBtn" aria-label="Switch between day and night ink" title="Day / night ink">☾</button>
     <button class="btn" id="exportBtn">Export CSV</button>
     <button class="btn primary" id="addBtn">Add P&amp;L</button>
-    <button class="btn gchip" id="gChip" hidden title="Sign out of Google"><img id="gPic" alt=""><span id="gName"></span></button>
+    <button class="btn gchip" id="gChip" hidden title="Sign out"><img id="gPic" alt=""><span id="gName"></span></button>
   </div>
 </header>
 <hr class="docrule">
@@ -398,7 +516,7 @@ footer b{color:var(--muted);font-weight:600}
 
 <div class="strip">
   <div><div class="strip-label">Win rate</div><div class="strip-val" id="winrate">0%</div><div class="strip-foot" id="winFoot">0 winning · 0 losing days</div></div>
-  <div><div class="strip-label">Best day</div><div class="strip-val positive" id="best">—</div><div class="strip-foot" id="bestDate">no trades in view</div></div>
+  <div><div class="strip-label">Best day</div><div class="strip-val" id="best">—</div><div class="strip-foot" id="bestDate">no trades in view</div></div>
   <div><div class="strip-label">Worst day</div><div class="strip-val" id="worst">—</div><div class="strip-foot" id="worstDate">no trades in view</div></div>
   <div><div class="strip-label">Average / day</div><div class="strip-val" id="average">₹0</div><div class="strip-foot" id="avgFoot">per active trading day</div></div>
   <div><div class="strip-label">Current streak</div><div class="strip-val" id="streak">—</div><div class="strip-foot" id="streakFoot">no days yet</div></div>
@@ -470,7 +588,7 @@ footer b{color:var(--muted);font-weight:600}
 <div id="viewData" hidden>
 <div class="intro">
   <h2>Everything you've stored, in one place.</h2>
-  <p>Full control over your ledger. Records live in this browser on this device — nothing leaves it unless you export.</p>
+  <p>Full control over your ledger. Records live on this device — and once you sign in, in your own private cloud database. Export any time.</p>
 </div>
 
 <div class="strip">
@@ -545,7 +663,7 @@ footer b{color:var(--muted);font-weight:600}
 </section>
 </div>
 
-<footer>TradeLedger · <b>your data stays in this browser, on this device</b> · a tracking journal, not investment advice</footer>
+<footer>TradeLedger · <b>local-first by design</b> · with a free account your ledger syncs to a private cloud database · a tracking journal, not investment advice</footer>
 </div>
 
 <!-- shared modals -->
@@ -649,6 +767,16 @@ function drawdownInfo(list){
   return{maxDD,ddDate,ddPeakDate};
 }
 function renderAll(){renderJournal();renderData()}
+
+/* ── Landing ↔ app ── */
+function enterApp(){
+  try{localStorage.setItem('tradeledger_visited','1')}catch(e){}
+  $('landing').hidden=true;$('app').hidden=false;
+}
+function landingOK(){
+  try{if(localStorage.getItem('tradeledger_visited'))return false}catch(e){}
+  return !curUser&&!Object.keys(entries).length;
+}
 
 /* ── Journal view ── */
 function renderJournal(){
@@ -1002,13 +1130,13 @@ function markBackup(){localStorage.setItem('tradeledger_last_backup',new Date().
 const csvOf=()=>{
   let rows=[['Date','Gross P&L','Charges','Net P&L','Symbol','Note'],
     ...Object.entries(entries).sort(([a],[b])=>a.localeCompare(b)).map(([d,e])=>[d,e.gross,e.charges||0,net(e),e.symbol||'',e.note||''])];
-  return rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');
+  return rows.map(r=>r.map(v=>'\"'+String(v).replaceAll('\"','\"\"')+'\"').join(',')).join('\n');
 };
 function parseCsvLine(line){
   let out=[],cur='',q=false;
   for(let i=0;i<line.length;i++){let c=line[i];
-    if(q){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
-    else{if(c==='"')q=true;else if(c===','){out.push(cur);cur=''}else cur+=c}}
+    if(q){if(c==='\"'){if(line[i+1]==='\"'){cur+='\"';i++}else q=false}else cur+=c}
+    else{if(c==='\"')q=true;else if(c===','){out.push(cur);cur=''}else cur+=c}}
   out.push(cur);return out;
 }
 $('exportBtn').onclick=()=>{if(!Object.keys(entries).length)return toast('Nothing to export yet');dl(csvOf(),'tradeledger-pnl.csv','text/csv');markBackup();toast('CSV downloaded')};
@@ -1055,21 +1183,28 @@ $('fileInput').onchange=ev=>{
 
 /* ── Live sync across tabs ── */
 window.addEventListener('storage',e=>{
-  if(e.key===key){try{entries=JSON.parse(e.newValue||'{}')||{}}catch(x){}renderAll()}
+  if(e.key===key){
+    try{entries=JSON.parse(e.newValue||'{}')||{}}catch(x){}
+    if(!$('landing').hidden&&Object.keys(entries).length)enterApp();
+    renderAll();
+  }
 });
 
 /* ── Day / night ink ── */
 function applyTheme(t){
   document.documentElement.dataset.theme=t;
-  $('themeBtn').textContent=t==='night'?'☀':'☾';
-  $('themeBtn').title=t==='night'?'Switch to day paper':'Switch to night ink';
-  document.querySelector('meta[name=theme-color]').content=t==='night'?'#10151A':'#DFE3D2';
+  const glyph=t==='night'?'☀':'☾',title=t==='night'?'Switch to day paper':'Switch to night ink';
+  $('themeBtn').textContent=glyph;$('themeBtn').title=title;
+  $('themeLand').textContent=glyph;$('themeLand').title=title;
+  document.querySelector('meta[name=theme-color]').content=t==='night'?'#0D1216':'#E2E5D4';
 }
-$('themeBtn').onclick=()=>{
+function toggleTheme(){
   let t=document.documentElement.dataset.theme==='night'?'day':'night';
   try{localStorage.setItem('tradeledger_theme',t)}catch(e){}
   applyTheme(t);
-};
+}
+$('themeBtn').onclick=toggleTheme;
+$('themeLand').onclick=toggleTheme;
 applyTheme(document.documentElement.dataset.theme||'day');
 
 /* ── Toast with undo ── */
@@ -1089,23 +1224,10 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 }
 
 /* ── Cloud sync: Firebase Auth + Firestore ─────────────────────
-   One-time setup (free, ~5 minutes):
-     1. console.firebase.google.com → Add project
-     2. Build → Authentication → Get started → enable
-        Email/Password and Google as sign-in providers
-     3. Build → Firestore Database → Create database (start in
-        production mode; regional location is fine)
-     4. Project settings (gear) → Your apps → Web (</>) → register
-        app "TradeLedger" → copy the firebaseConfig values below
-     5. Authentication → Settings → Authorized domains → add:
-          r1t1kkumar.github.io
-     6. Firestore → Rules → paste the contents of firestore.rules
-        from the project repo → Publish
-   Without a config, everything else keeps working locally and the
-   card below shows these instructions. */
+   Configured for the production project "tradeledger-app". */
 const FIREBASE_CONFIG={apiKey:'AIzaSyBE_QYTk_vnN36evjSR5q3piXwJv1s2Ivw',authDomain:'tradeledger-app.firebaseapp.com',projectId:'tradeledger-app',appId:'1:778641700982:web:3da04ccc57b921eb000757'};
 const CLOUD=!!(FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.projectId);
-let curUser=null,cloudUnsub=null,syncingFromCloud=false,setupShown=false;
+let curUser=null,cloudUnsub=null,syncingFromCloud=false,setupShown=false,pendingWelcome=false;
 
 const canon=o=>JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));
 const when=ts=>{let d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})};
@@ -1122,6 +1244,8 @@ function setAccountUI(user){
     if(user.photoURL){img.src=user.photoURL;img.alt=name}else img.removeAttribute('src');
     chip.hidden=false;
     accStatus(`Signed in as ${user.email} — changes sync to your private database automatically.`);
+    enterApp();
+    if(pendingWelcome){pendingWelcome=false;toast('Account created — post your first day to start the ledger')}
   }else{
     chip.hidden=true;
     if(CLOUD)accStatus('Create a free account to sync your ledger across devices — a private database only you can read.');
@@ -1190,7 +1314,7 @@ $('authToggle').onclick=()=>{
 $('authForgot').onclick=()=>authOpen('forgot');
 $('authForm').onsubmit=e=>{
   e.preventDefault();
-  if(!CLOUD){authErr('Cloud sync isn\'t configured yet — paste your Firebase config into index.html (search "FIREBASE_CONFIG"), then reload. See the Cloud sync card in My Data.');return}
+  if(!CLOUD){authErr('Cloud sync isn\'t configured yet — see the Cloud sync card in My Data.');return}
   let email=$('authEmail').value.trim(),pass=$('authPass').value;
   let btn=$('authGo');btn.disabled=true;
   let done=()=>{btn.disabled=false};
@@ -1200,14 +1324,16 @@ $('authForm').onsubmit=e=>{
   }else if(authMode==='signin'){
     p=firebase.auth().signInWithEmailAndPassword(email,pass);
   }else{
+    pendingWelcome=true;
     p=firebase.auth().createUserWithEmailAndPassword(email,pass);
   }
   p.then(done).catch(err=>{done();authErr(AUTH_FRIENDLY[err.code]||err.message)});
 };
 $('authGoogle').onclick=()=>{
-  if(!CLOUD){authErr('Cloud sync isn\'t configured yet — paste your Firebase config into index.html (search "FIREBASE_CONFIG"), then reload.');return}
+  if(!CLOUD){authErr('Cloud sync isn\'t configured yet — see the Cloud sync card in My Data.');return}
+  pendingWelcome=true;
   let provider=new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(err=>authErr(AUTH_FRIENDLY[err.code]||err.message));
+  firebase.auth().signInWithPopup(provider).catch(err=>{pendingWelcome=false;authErr(AUTH_FRIENDLY[err.code]||err.message)});
 };
 $('accSignout').onclick=()=>askConfirm('Sign out? Your ledger stays on this device, and your cloud copy stays safe in your account.',()=>{
   if(cloudUnsub){cloudUnsub();cloudUnsub=null}
@@ -1318,7 +1444,15 @@ if(!CLOUD&&!setupShown){
   accStatus('Setup: create a free Firebase project, then paste its config into index.html (search "FIREBASE_CONFIG") and reload. Full steps are in README.md. Until then, your ledger keeps working locally.');
 }
 
+/* ── Landing controls ── */
+$('ldCreate').onclick=()=>authOpen('create');
+$('ldCreate2').onclick=()=>authOpen('create');
+$('ldCreate3').onclick=()=>authOpen('create');
+$('ldSignin').onclick=()=>authOpen('signin');
+$('ldTry').onclick=enterApp;
+
 renderAll();
+if(landingOK()){$('landing').hidden=false;$('app').hidden=true}
 </script>
 </body>
 </html>
