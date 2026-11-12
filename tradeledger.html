@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#DFE3D2">
+<title>TradeLedger — P&L Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#DFE3D2; --sheet:#F7F8F0; --paper:#FFFFFF;
+  --ink:#22333B; --ink-soft:#3C4B44; --muted:#5F6E60; --faint:#8A9683;
+  --rule:#C7CFB4; --rule-strong:#22333B;
+  --loss:#B23A28; --loss-soft:#EFD3C8;
+  --win:#1E6B4E; --win-soft:#CFE0D2;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--desk);color:var(--ink);
+  font:15px/1.55 'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+::selection{background:#22333B22}
+
+.sheet{max-width:1240px;margin:34px auto 60px;background:var(--sheet);
+  border:1px solid #B9C2A6;border-radius:6px;
+  box-shadow:0 2px 6px #22333B14,0 18px 44px #22333B1A;
+  padding:0 56px 48px}
+@media(max-width:1300px){.sheet{margin:0 auto 40px;border-radius:0;border-left:0;border-right:0}}
+@media(max-width:720px){.sheet{padding:0 20px 36px}}
+
+/* ── Document header ─────────────────────────── */
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:30px 0 22px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.mark{width:40px;height:40px;background:var(--ink);color:var(--sheet);border-radius:6px;
+  display:grid;place-items:center;font:600 17px/1 Newsreader,Georgia,serif;letter-spacing:.02em}
+.brand h1{margin:0;font:600 22px/1.1 Newsreader,Georgia,serif;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:1.5px solid var(--ink);border-radius:4px;background:var(--sheet);color:var(--ink);
+  padding:9px 15px;font-size:13px;font-weight:600;transition:background .15s,color .15s}
+.btn:hover{background:var(--ink);color:var(--sheet)}
+.btn.primary{background:var(--ink);color:var(--sheet)}
+.btn.primary:hover{background:var(--ink-soft);border-color:var(--ink-soft)}
+.btn.danger{border-color:var(--loss);color:var(--loss);background:var(--sheet)}
+.btn.danger:hover{background:var(--loss);color:var(--sheet)}
+.btn.small{padding:6px 11px;font-size:12px}
+a.btn{text-decoration:none}
+.btn[disabled]{opacity:.35;pointer-events:none}
+
+.docrule{border:0;border-top:2.5px solid var(--rule-strong);margin:0}
+
+/* ── View tabs ───────────────────────────────── */
+.viewtabs{display:flex;gap:26px;padding:0 0 0;border-bottom:1px solid var(--rule)}
+.viewtab{padding:13px 2px 12px;font-size:14px;font-weight:600;color:var(--muted);
+  border-bottom:2.5px solid transparent;margin-bottom:-1px;transition:color .15s}
+.viewtab:hover{color:var(--ink)}
+.viewtab.active{color:var(--ink);border-bottom-color:var(--rule-strong)}
+
+/* ── Hero: the verdict ───────────────────────── */
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding:36px 0 30px;flex-wrap:wrap}
+.hero-label{font-size:13px;color:var(--muted);margin-bottom:6px}
+.hero-line{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.hero-net{font:600 clamp(44px,7vw,66px)/1 Newsreader,Georgia,serif;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.hero-net.positive{color:var(--win)}
+.hero-net.negative{color:var(--loss)}
+.stamp{border:2.5px solid currentColor;border-radius:8px;padding:.32em .75em;
+  font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  transform:rotate(-3deg);color:var(--faint)}
+.stamp.win{color:var(--win)}
+.stamp.loss{color:var(--loss)}
+@keyframes thump{from{transform:rotate(-3deg) scale(1.28);opacity:0}55%{opacity:1}to{transform:rotate(-3deg) scale(1)}}
+.stamp.thump{animation:thump .38s ease-out both}
+.hero-foot{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.ptabs{display:flex;border:1.5px solid var(--ink);border-radius:5px;overflow:hidden}
+.ptab{padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--ink-soft);border-left:1px solid var(--rule)}
+.ptab:first-child{border-left:0}
+.ptab:hover{background:#22333B0D}
+.ptab.active{background:var(--ink);color:var(--sheet)}
+@media(max-width:720px){.hero{padding:26px 0 22px}.ptabs{width:100%}.ptab{flex:1;text-align:center;padding:9px 6px}}
+
+/* ── Summary strip ───────────────────────────── */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.strip>div{padding:18px 22px 16px;border-left:1px solid var(--rule);min-width:0}
+.strip>div:first-child{border-left:0;padding-left:0}
+.strip-label{font-size:12px;color:var(--muted)}
+.strip-val{font-size:23px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin:7px 0 3px}
+.strip-val.positive{color:var(--win)}
+.strip-val.negative{color:var(--loss)}
+.strip-foot{font-size:11.5px;color:var(--faint)}
+@media(max-width:900px){.strip{grid-template-columns:1fr 1fr}
+  .strip>div{padding:15px 18px;border-top:1px solid var(--rule)}
+  .strip>div:nth-child(-n+2){border-top:0}
+  .strip>div:nth-child(odd){border-left:0;padding-left:0}
+  .strip>div:first-child{padding-left:0}}
+
+/* ── Sections ────────────────────────────────── */
+section{padding-top:34px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.sec-head h2{margin:0;font:600 21px/1.2 Newsreader,Georgia,serif;letter-spacing:-.01em}
+.sec-head p{margin:3px 0 0;font-size:12.5px;color:var(--muted)}
+.tag{font-size:11px;font-weight:600;color:var(--ink-soft);border:1px solid var(--rule);border-radius:3px;
+  padding:4px 9px;background:var(--paper);white-space:nowrap}
+
+.intro{padding:32px 0 26px}
+.intro h2{margin:0 0 6px;font:600 clamp(26px,3.6vw,34px)/1.15 Newsreader,Georgia,serif;letter-spacing:-.015em}
+.intro p{margin:0;color:var(--muted);font-size:14px;max-width:56ch}
+
+/* heatmap */
+.heat-wrap{overflow-x:auto;padding-bottom:6px}
+.heatmap{display:grid;grid-template-rows:repeat(7,13px);grid-auto-flow:column;grid-auto-columns:13px;gap:4px;min-width:max-content}
+.day{width:13px;height:13px;border-radius:2.5px;background:#E3E7D2;box-shadow:inset 0 0 0 1px #22333B12}
+.day.win[data-level="1"]{background:#D6E4D3}
+.day.win[data-level="2"]{background:#A8CBAF}
+.day.win[data-level="3"]{background:#5FA381}
+.day.win[data-level="4"]{background:#1E6B4E}
+.day.loss[data-level="1"]{background:#EFD6CB}
+.day.loss[data-level="2"]{background:#E0A791}
+.day.loss[data-level="3"]{background:#CE6B50}
+.day.loss[data-level="4"]{background:#B23A28}
+.heat-legend{display:flex;align-items:center;gap:14px;margin-top:14px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.legend-scale{display:flex;align-items:center;gap:3px}
+.legend-scale i{display:block;width:11px;height:11px;border-radius:2.5px;background:#E3E7D2;box-shadow:inset 0 0 0 1px #22333B12}
+.legend-scale.win i:nth-child(2){background:#D6E4D3}.legend-scale.win i:nth-child(3){background:#A8CBAF}
+.legend-scale.win i:nth-child(4){background:#5FA381}.legend-scale.win i:nth-child(5){background:#1E6B4E}
+.legend-scale.loss i:nth-child(2){background:#EFD6CB}.legend-scale.loss i:nth-child(3){background:#E0A791}
+.legend-scale.loss i:nth-child(4){background:#CE6B50}.legend-scale.loss i:nth-child(5){background:#B23A28}
+
+/* two-column band */
+.band{display:grid;grid-template-columns:1.55fr 1fr;gap:44px}
+@media(max-width:900px){.band{grid-template-columns:1fr;gap:34px}}
+
+/* chart */
+.chart{height:216px;display:flex;align-items:end;gap:7px;padding:16px 2px 26px;position:relative;
+  border-bottom:2px solid var(--ink)}
+.bar-col{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;position:relative;min-width:8px}
+.bar{width:min(22px,72%);border-radius:2px 2px 0 0;min-height:2px}
+.bar.win{background:var(--win)}
+.bar.loss{background:repeating-linear-gradient(45deg,var(--loss) 0 3px,#E0A791 3px 6px)}
+.bar-label{position:absolute;top:calc(100% + 7px);font-size:9.5px;color:var(--faint);white-space:nowrap}
+.chart-note{font-size:11.5px;color:var(--muted);margin-top:12px}
+
+/* breakdown with dotted leaders */
+.lrow{display:flex;align-items:baseline;gap:10px;padding:10px 0;border-bottom:1px solid #DDE2CE}
+.lrow:last-child{border-bottom:0}
+.lrow span{font-size:13.5px;color:var(--ink-soft)}
+.leader{flex:1;border-bottom:1.5px dotted #A3AF93;transform:translateY(-4px);min-width:24px}
+.lrow b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lrow b.neg{color:var(--loss)}
+
+/* tables */
+.table-scroll{overflow-x:auto}
+.table-scroll.tall{overflow:auto;max-height:62vh}
+table{width:100%;border-collapse:collapse;min-width:720px}
+table.wide{min-width:820px}
+th,td{text-align:left;padding:11px 14px 11px 0;border-bottom:1px solid var(--rule);font-size:13px}
+th{font-size:11px;font-weight:600;color:var(--muted);border-bottom:1.5px solid var(--ink)}
+table.sortable th{position:sticky;top:0;background:var(--sheet);cursor:pointer;user-select:none;white-space:nowrap;z-index:1}
+table.sortable th:hover{color:var(--ink)}
+td{font-variant-numeric:tabular-nums}
+td:nth-child(n+4):nth-child(-n+6),th:nth-child(n+4):nth-child(-n+6){text-align:right;padding-right:14px}
+td:nth-child(4),td:nth-child(5),td:nth-child(6){padding-right:0}
+tbody tr:hover td{background:#22333B06}
+td .tag{max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+.positive{color:var(--win)}
+.negative{color:var(--loss)}
+.row-actions{display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{border:1px solid #B9C2A6;border-radius:3px;background:var(--paper);color:var(--ink-soft);
+  padding:4px 9px;font-size:11px;font-weight:600}
+.icon-btn:hover{border-color:var(--ink);color:var(--ink)}
+.icon-btn.del:hover{border-color:var(--loss);color:var(--loss)}
+.empty-state{border:1.5px dashed #A9B598;border-radius:5px;padding:40px 24px;text-align:center;
+  color:var(--muted);font:italic 500 15.5px/1.6 Newsreader,Georgia,serif}
+.empty-state b{font-style:normal}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0 0;
+  color:var(--muted);font-size:12px}
+.pager .btns{display:flex;gap:8px}
+
+/* toolbar — paper-form fields */
+.toolbar{display:flex;gap:18px;align-items:end;flex-wrap:wrap;padding:6px 0 18px;border-bottom:1px solid var(--rule)}
+.toolbar .f{display:flex;flex-direction:column;gap:4px}
+.toolbar label{font-size:10.5px;color:var(--faint);font-weight:600}
+.toolbar input,.toolbar select{background:transparent;border:0;border-bottom:1.5px solid #22333B45;
+  border-radius:0;padding:7px 2px;outline:none;min-width:120px}
+.toolbar input:hover,.toolbar select:hover{border-bottom-color:#22333B80}
+.toolbar input:focus,.toolbar select:focus{border-bottom-color:var(--ink)}
+.toolbar input[type=search]{min-width:210px}
+.toolbar .spacer{flex:1}
+.toolbar .tag{align-self:center}
+@media(max-width:720px){.toolbar{gap:12px}.toolbar input,.toolbar select{min-width:0;flex:1 1 40%}.toolbar input[type=search]{flex-basis:100%}}
+
+/* instruments */
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--ink);border-radius:4px;background:var(--sheet);color:var(--ink);
+  padding:10px 14px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:132px;
+  font-variant-numeric:tabular-nums;transition:background .15s,color .15s}
+.chip b{font:600 14.5px/1.2 'IBM Plex Sans';letter-spacing:.01em}
+.chip small{font-size:11px;color:var(--muted)}
+.chip small.positive{color:var(--win);font-weight:700}
+.chip small.negative{color:var(--loss);font-weight:700}
+.chip:hover{background:#22333B0A}
+.chip.active{background:var(--ink);color:var(--sheet)}
+.chip.active small{color:#C9D2BC}
+.chip.active small.positive{color:#8FD4B4}
+.chip.active small.negative{color:#F0A99A}
+
+/* backup annex */
+.annex{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.annex>div{padding:20px 24px;border-left:1px solid var(--rule);display:flex;flex-direction:column;gap:9px;min-width:0}
+.annex>div:first-child{border-left:0;padding-left:0}
+.annex h3{margin:0;font:600 16px/1.3 Newsreader,Georgia,serif}
+.annex p{margin:0;color:var(--muted);font-size:12.5px;flex:1}
+.annex .row{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:900px){.annex{grid-template-columns:1fr}
+  .annex>div{border-left:0;padding-left:0;border-top:1px solid var(--rule)}
+  .annex>div:first-child{border-top:0}}
+
+/* modal */
+.modal-backdrop{position:fixed;inset:0;background:#22333B55;display:none;place-items:center;padding:18px;z-index:5}
+.modal-backdrop.show{display:grid}
+.modal{width:min(440px,100%);background:var(--sheet);border:1.5px solid var(--ink);border-radius:6px;
+  padding:26px;box-shadow:0 24px 60px #22333B40}
+.modal h3{margin:0 0 4px;font:600 20px/1.2 Newsreader,Georgia,serif}
+.modal p{margin:0 0 18px;color:var(--muted);font-size:12.5px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--ink-soft)}
+.field input{width:100%;background:var(--paper);border:1px solid #B9C2A6;border-radius:4px;padding:10px 11px;outline:none}
+.field input:focus{border-color:var(--ink)}
+.hint{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.5}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--sheet);border:1.5px solid var(--ink);border-radius:4px;color:var(--ink);
+  padding:11px 18px;font-size:13px;font-weight:500;box-shadow:0 14px 36px #22333B33;opacity:0;
+  transition:.25s;z-index:9;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);
+  font-size:11.5px;color:var(--faint);text-align:center}
+footer b{color:var(--muted);font-weight:600}
+@media(max-width:720px){footer{margin-top:34px}}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+<header>
+  <div class="brand">
+    <div class="mark">TL</div>
+    <div><h1>TradeLedger</h1><p>A daily P&amp;L journal — kept in ink, on paper</p></div>
+  </div>
+  <div class="actions">
+    <button class="btn" id="exportBtn">Export CSV</button>
+    <button class="btn primary" id="addBtn">Add P&amp;L</button>
+  </div>
+</header>
+<hr class="docrule">
+
+<nav class="viewtabs" role="tablist" aria-label="Sections">
+  <button class="viewtab active" data-view="journal" id="tabJournal">Journal</button>
+  <button class="viewtab" data-view="data" id="tabData">My Data</button>
+</nav>
+
+<!-- ═══════════ JOURNAL VIEW ═══════════ -->
+<div id="viewJournal">
+<div class="hero">
+  <div>
+    <div class="hero-label" id="heroLabel">Net P&amp;L · last 12 months</div>
+    <div class="hero-line">
+      <div class="hero-net" id="heroNet">₹0</div>
+      <div class="stamp" id="stamp" hidden>Net profit</div>
+    </div>
+    <div class="hero-foot" id="heroFoot">Nothing recorded yet</div>
+  </div>
+  <div class="ptabs" id="period" role="tablist" aria-label="Period">
+    <button class="ptab" data-v="30">30 days</button>
+    <button class="ptab" data-v="90">90 days</button>
+    <button class="ptab active" data-v="365">12 months</button>
+    <button class="ptab" data-v="all">All time</button>
+  </div>
+</div>
+
+<div class="strip">
+  <div><div class="strip-label">Win rate</div><div class="strip-val" id="winrate">0%</div><div class="strip-foot" id="winFoot">0 winning · 0 losing days</div></div>
+  <div><div class="strip-label">Best day</div><div class="strip-val positive" id="best">—</div><div class="strip-foot" id="bestDate">no trades in view</div></div>
+  <div><div class="strip-label">Worst day</div><div class="strip-val" id="worst">—</div><div class="strip-foot" id="worstDate">no trades in view</div></div>
+  <div><div class="strip-label">Average / day</div><div class="strip-val" id="average">₹0</div><div class="strip-foot" id="avgFoot">per active trading day</div></div>
+</div>
+
+<section>
+  <div class="sec-head"><div><h2>Day by day</h2><p>A year of trading, one square per day</p></div><span class="tag" id="activeDays">0 active days</span></div>
+  <div class="heat-wrap"><div class="heatmap" id="heatmap"></div></div>
+  <div class="heat-legend">
+    <span>less</span>
+    <div class="legend-scale win"><i></i><i></i><i></i><i></i><i></i></div>
+    <span>profitable days</span>
+    <div class="legend-scale loss"><i></i><i></i><i></i><i></i><i></i></div>
+    <span>losing days</span>
+  </div>
+</section>
+
+<section>
+  <div class="band">
+    <div>
+      <div class="sec-head"><div><h2>Daily results</h2><p>Recent sessions · solid ink for profit, hatched for loss</p></div></div>
+      <div class="chart" id="chart"></div>
+      <div class="chart-note">Bars scale to the largest absolute daily result in this view. Dates run left to right.</div>
+    </div>
+    <div>
+      <div class="sec-head"><div><h2>Where it comes from</h2><p>The arithmetic behind the verdict</p></div></div>
+      <div id="breakdown"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>Recent entries</h2><p>Your latest recorded trading days — the full record lives in My Data</p></div><span class="tag" id="entryCount">0 entries</span></div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Date</th><th>Day</th><th>Symbol</th><th>Gross</th><th>Charges</th><th>Net</th><th>Note</th></tr></thead>
+      <tbody id="entries"></tbody>
+    </table>
+  </div>
+  <div class="empty-state" id="emptyJournal" hidden>Nothing recorded yet. Add your first trading day — the ledger starts filling from there.</div>
+</section>
+</div>
+
+<!-- ═══════════ MY DATA VIEW ═══════════ -->
+<div id="viewData" hidden>
+<div class="intro">
+  <h2>Everything you've stored, in one place.</h2>
+  <p>Full control over your ledger. Records live in this browser on this device — nothing leaves it unless you export.</p>
+</div>
+
+<div class="strip">
+  <div><div class="strip-label">Stored entries</div><div class="strip-val" id="stTotal">0</div><div class="strip-foot" id="stRange">no records yet</div></div>
+  <div><div class="strip-label">Stored net P&amp;L</div><div class="strip-val" id="stNet">₹0</div><div class="strip-foot">sum of every entry</div></div>
+  <div><div class="strip-label">Storage used</div><div class="strip-val" id="stSize">0 KB</div><div class="strip-foot">of ~5 MB browser storage</div></div>
+  <div><div class="strip-label">Last modified</div><div class="strip-val" id="stModified">—</div><div class="strip-foot" id="stModDetail">no changes yet</div></div>
+</div>
+
+<section>
+  <div class="sec-head"><div><h2>Instruments traded</h2><p>Stored net P&amp;L grouped by symbol — click to filter the table</p></div><span class="tag" id="instCount">0 instruments</span></div>
+  <div class="chips" id="instChips"></div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>The records</h2><p>Click a column header to sort · edit or delete any entry</p></div><span class="tag" id="selInfo">all records</span></div>
+  <div class="toolbar">
+    <div class="f" style="flex:1 1 220px"><label for="search">Search</label><input id="search" type="search" placeholder="note, symbol or date…"></div>
+    <div class="f"><label for="filterType">Result</label><select id="filterType"><option value="all">All</option><option value="win">Winning days</option><option value="loss">Losing days</option><option value="flat">Breakeven</option></select></div>
+    <div class="f"><label for="filterSym">Instrument</label><select id="filterSym"><option value="">All</option></select></div>
+    <div class="f"><label for="from">From</label><input id="from" type="date"></div>
+    <div class="f"><label for="to">To</label><input id="to" type="date"></div>
+    <button class="btn small" id="clearFilters">Clear filters</button>
+    <span class="spacer"></span>
+    <span class="tag" id="visibleCount">0 shown</span>
+  </div>
+  <div class="table-scroll tall">
+    <table class="sortable wide">
+      <thead><tr>
+        <th data-sort="date">Date</th><th data-sort="dow">Day</th><th data-sort="symbol">Symbol</th>
+        <th data-sort="gross">Gross</th><th data-sort="charges">Charges</th><th data-sort="net">Net</th>
+        <th data-sort="note">Note</th><th></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="empty-state" id="emptyData" hidden>Nothing stored yet. Use <b>Add P&amp;L</b> above, or restore a CSV / JSON backup below.</div>
+  <div class="pager">
+    <span id="pageInfo">Page 1 of 1</span>
+    <div class="btns"><button class="btn small" id="prevPage">← Previous</button><button class="btn small" id="nextPage">Next →</button></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>Keep a copy</h2><p>Backups stay yours — move them to another device any time</p></div></div>
+  <div class="annex">
+    <div>
+      <h3>Export CSV</h3>
+      <p>Spreadsheet-friendly copy of every stored entry, sorted by date. Opens in Excel and Google Sheets.</p>
+      <div class="row"><button class="btn" id="exportCsv">Download CSV</button></div>
+    </div>
+    <div>
+      <h3>JSON backup</h3>
+      <p>A full copy of the vault, restorable here on any device. Restore merges into what's already stored.</p>
+      <div class="row"><button class="btn" id="exportJson">Download backup</button><button class="btn" id="importJson">Restore</button></div>
+    </div>
+    <div>
+      <h3>Delete everything</h3>
+      <p>Erases every stored entry. Download a backup first — this cannot be undone.</p>
+      <div class="row"><button class="btn danger" id="wipeBtn2">Delete all data</button></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>TradeLedger · <b>your data stays in this browser, on this device</b> · a tracking journal, not investment advice</footer>
+</div>
+
+<!-- shared modals -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Add a trading day</h3>
+    <p id="modalSub">Enter the realised result for one day. Net is calculated for you.</p>
+    <form id="entryForm">
+      <div class="form-grid">
+        <div class="field full"><label for="date">Trading date</label><input id="date" type="date" required></div>
+        <div class="field"><label for="gross">Gross P&amp;L (₹)</label><input id="gross" type="number" step="0.01" placeholder="e.g. 2500" required></div>
+        <div class="field"><label for="charges">Charges (₹)</label><input id="charges" type="number" step="0.01" min="0" value="0"></div>
+        <div class="field full"><label for="symbol">Instrument / symbol (optional)</label><input id="symbol" maxlength="24" list="symbolList" placeholder="e.g. BITCOINUSDT, NIFTY" style="text-transform:uppercase"></div>
+        <div class="field full"><label for="note">Note / setup (optional)</label><input id="note" maxlength="80" placeholder="e.g. breakout, first 15 min"></div>
+      </div>
+      <div class="hint">Use a negative gross P&amp;L for a losing day. One entry per date — saving again updates that day.</div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelBtn">Cancel</button>
+        <button class="btn primary" type="submit">Save entry</button>
+      </div>
+    </form>
+    <datalist id="symbolList"></datalist>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="confirm">
+  <div class="modal">
+    <h3>Are you sure?</h3>
+    <p id="confirmText"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="confirmNo">Cancel</button>
+      <button type="button" class="btn danger" id="confirmYes">Yes, delete</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="fileInput" accept=".csv,.json" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n);
+const key='tradeledger_entries_v1';
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let entries={},periodDays=365,sortKey='date',sortDir=-1,page=1,perPage=25,editingDate=null,symFilter='',currentView='journal';
+try{entries=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){entries={}}
+const today=new Date();
+const iso=d=>{let x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
+function save(){localStorage.setItem(key,JSON.stringify(entries));localStorage.setItem('tradeledger_last_modified',new Date().toISOString())}
+function net(e){return Number(e.gross)-Number(e.charges||0)}
+function all(){return Object.entries(entries).map(([date,e])=>({date,day:DOW[new Date(date+'T00:00:00').getDay()],gross:Number(e.gross),charges:Number(e.charges||0),net:net(e),symbol:(e.symbol||'').toUpperCase(),note:e.note||''}))}
+const periodName={30:'last 30 days',90:'last 90 days',365:'last 12 months',all:'all time'};
+function selected(){
+  let arr=all().sort((a,b)=>a.date.localeCompare(b.date));
+  if(periodDays!=='all'){let start=new Date();start.setHours(0,0,0,0);start.setDate(start.getDate()-Number(periodDays)+1);let min=iso(start);arr=arr.filter(e=>e.date>=min&&e.date<=iso(today))}
+  return arr;
+}
+function renderAll(){renderJournal();renderData()}
+
+/* ── Journal view ── */
+function filteredJournal(){return selected()}
+function renderJournal(){
+  const data=selected(),wins=data.filter(e=>e.net>0),losses=data.filter(e=>e.net<0),sum=data.reduce((a,e)=>a+e.net,0),
+        best=data.reduce((a,b)=>!a||b.net>a.net?b:a,null),worst=data.reduce((a,b)=>!a||b.net<a.net?b:a,null),active=data.length;
+  $('heroNet').textContent=fmt(sum);
+  $('heroNet').className='hero-net '+(sum>0?'positive':sum<0?'negative':'');
+  $('heroLabel').textContent='Net P&L · '+(periodName[periodDays]||'all time');
+  $('heroFoot').textContent=active?`after charges · ${active} recorded trading day${active===1?'':'s'}`:'Nothing recorded yet — add your first day below';
+  const st=$('stamp');
+  if(!active){st.hidden=true}
+  else{st.hidden=false;st.textContent=sum>0?'Net profit':sum<0?'Net loss':'No net change';
+       st.className='stamp thump '+(sum>0?'win':sum<0?'loss':'')}
+  $('winrate').textContent=(active?(wins.length/active*100):0).toFixed(1)+'%';
+  $('winFoot').textContent=`${wins.length} winning · ${losses.length} losing`;
+  $('best').textContent=best?fmt(best.net):'—';
+  $('bestDate').textContent=best?new Date(best.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'no trades in view';
+  $('worst').textContent=worst?fmt(worst.net):'—';
+  $('worst').className='strip-val '+(worst&&worst.net<0?'negative':'');
+  $('worstDate').textContent=worst?new Date(worst.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'no trades in view';
+  $('average').textContent=fmt(active?sum/active:0);
+  $('avgFoot').textContent='per active trading day';
+  $('activeDays').textContent=active+' active days';
+  $('entryCount').textContent=active+' entries';
+  renderHeat();renderChart(data);renderBreakdown(data,wins,losses,sum,best,worst);renderTable(data);
+}
+function renderHeat(){
+  const el=$('heatmap');el.innerHTML='';
+  let end=new Date(today);end.setHours(0,0,0,0);
+  let start=new Date(end);start.setDate(start.getDate()-363);start.setDate(start.getDate()-start.getDay());
+  let vals=Object.entries(entries).map(([d,e])=>[d,net(e)]).filter(([d])=>d>=iso(start)&&d<=iso(end)).map(x=>Math.abs(x[1]));
+  let max=Math.max(1,...vals);
+  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+    let date=iso(d),e=entries[date],v=e?net(e):0;
+    let level=!e?0:Math.min(4,Math.max(1,Math.ceil(Math.abs(v)/max*4)));
+    let cell=document.createElement('div');
+    cell.className='day'+(e?(v<0?' loss':' win'):'');
+    cell.dataset.level=level;
+    cell.title=e?`${date}: ${fmt(v)}`:`${date}: no entry`;
+    el.appendChild(cell);
+  }
+}
+function renderChart(data){
+  let d=data.slice(-30),el=$('chart');el.innerHTML='';
+  let max=Math.max(1,...d.map(e=>Math.abs(e.net)));
+  if(!d.length){el.innerHTML='<div style="width:100%;text-align:center;color:var(--muted);font:italic 500 15px Newsreader,Georgia,serif;padding-top:80px">Add entries to see daily results here.</div>';return}
+  d.forEach(e=>{
+    let col=document.createElement('div');col.className='bar-col';
+    let bar=document.createElement('div');bar.className='bar '+(e.net>=0?'win':'loss');
+    bar.style.height=Math.max(2,Math.abs(e.net)/max*100)+'%';
+    bar.title=`${e.date}: ${fmt(e.net)}`;
+    let label=document.createElement('span');label.className='bar-label';
+    label.textContent=new Date(e.date+'T00:00:00').getDate();
+    col.append(bar,label);el.append(col);
+  });
+}
+function renderBreakdown(data,wins,losses,sum,best,worst){
+  let el=$('breakdown');
+  let grossWin=wins.reduce((a,e)=>a+e.net,0),grossLoss=Math.abs(losses.reduce((a,e)=>a+e.net,0)),
+      avgWin=wins.length?grossWin/wins.length:0,avgLoss=losses.length?grossLoss/losses.length:0,
+      pf=grossLoss?grossWin/grossLoss:(grossWin?'∞':'—'),
+      charges=data.reduce((a,e)=>a+Number(e.charges||0),0);
+  let rows=[['Winning days',wins.length+' of '+data.length,''],
+            ['Losing days',losses.length+' of '+data.length,'neg'],
+            ['Average win',fmt(avgWin),''],
+            ['Average loss',fmt(avgLoss),'neg'],
+            ['Charges paid',fmt(charges),''],
+            ['Profit factor',pf,'']];
+  el.innerHTML=rows.map(([l,v,cls])=>`<div class="lrow"><span>${l}</span><i class="leader"></i><b class="${cls}">${v}</b></div>`).join('');
+}
+function renderTable(data){
+  let body=$('entries');body.innerHTML='';$('emptyJournal').hidden=!!data.length;
+  data.slice().reverse().slice(0,12).forEach(e=>{
+    let tr=document.createElement('tr');
+    let vals=[e.date,e.day,e.symbol||'—',fmt(e.gross),fmt(e.charges),fmt(e.net),e.note||'—'];
+    vals.forEach((v,i)=>{
+      let td=document.createElement('td');td.textContent=v;
+      if(i===5)td.className=e.net>=0?'positive':'negative';
+      if(i===6){td.innerHTML='';let s=document.createElement('span');s.className='tag';s.textContent=v;td.appendChild(s)}
+      tr.append(td);
+    });
+    body.append(tr);
+  });
+}
+
+/* ── My Data view ── */
+function filteredData(){
+  let list=all(),q=$('search').value.trim().toLowerCase(),t=$('filterType').value,f=$('from').value,to=$('to').value;
+  if(q)list=list.filter(e=>e.note.toLowerCase().includes(q)||e.date.includes(q)||e.symbol.toLowerCase().includes(q));
+  if(t==='win')list=list.filter(e=>e.net>0);
+  if(t==='loss')list=list.filter(e=>e.net<0);
+  if(t==='flat')list=list.filter(e=>e.net===0);
+  if(symFilter)list=list.filter(e=>symFilter==='__none'?!e.symbol:e.symbol===symFilter);
+  if(f)list=list.filter(e=>e.date>=f);
+  if(to)list=list.filter(e=>e.date<=to);
+  list.sort((a,b)=>{let x=a[sortKey],y=b[sortKey];return(typeof x==='string'?x.localeCompare(y):x-y)*sortDir});
+  return list;
+}
+function renderData(){
+  let list=filteredData(),pages=Math.max(1,Math.ceil(list.length/perPage));
+  if(page>pages)page=pages;
+  let slice=list.slice((page-1)*perPage,page*perPage);
+  let body=$('rows');body.innerHTML='';
+  slice.forEach(e=>{
+    let tr=document.createElement('tr');
+    let cells=[e.date,e.day,e.symbol||'—',fmt(e.gross),e.charges?fmt(e.charges):'—',fmt(e.net),e.note?e.note:'—'];
+    cells.forEach((v,i)=>{
+      let td=document.createElement('td');td.textContent=v;
+      if(i===5)td.className=e.net>0?'positive':e.net<0?'negative':'';
+      if(i===6){td.innerHTML='';let s=document.createElement('span');s.className='tag';s.textContent=v;td.appendChild(s)}
+      if(i===7){
+        td.className='row-actions';
+        let ed=document.createElement('button');ed.className='icon-btn';ed.textContent='Edit';
+        ed.onclick=()=>openModal(e.date);
+        let de=document.createElement('button');de.className='icon-btn del';de.textContent='Delete';
+        de.onclick=()=>askConfirm(`Delete the entry for ${e.date}?`,()=>{delete entries[e.date];save();renderAll();toast('Entry deleted')});
+        td.append(ed,de);
+      }
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+  $('emptyData').hidden=!!list.length;
+  $('visibleCount').textContent=list.length+' shown';
+  $('pageInfo').textContent=`Page ${page} of ${pages} · ${list.length} entr${list.length===1?'y':'ies'}`;
+  $('prevPage').disabled=page<=1;$('nextPage').disabled=page>=pages;
+  $('selInfo').textContent=symFilter?(symFilter==='__none'?'filtered: no symbol':'filtered: '+symFilter):'all records';
+  // stat strip
+  let total=Object.keys(entries).length,dates=Object.keys(entries).sort(),sum=all().reduce((a,e)=>a+e.net,0);
+  $('stTotal').textContent=total;
+  $('stRange').textContent=dates.length?`${dates[0]} → ${dates[dates.length-1]}`:'no records yet';
+  $('stNet').textContent=fmt(sum);$('stNet').className='strip-val '+(sum>=0?'positive':'negative');
+  let size=new Blob([localStorage.getItem(key)||'']).size;
+  $('stSize').textContent=size>1024?(size/1024).toFixed(1)+' KB':size+' B';
+  let mod=localStorage.getItem('tradeledger_last_modified');
+  $('stModified').textContent=mod?new Date(mod).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+  $('stModDetail').textContent=mod?new Date(mod).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit'}):'no changes yet';
+  // instruments
+  let groups={};all().forEach(x=>{let s=x.symbol||'General';groups[s]=groups[s]||{n:0,net:0};groups[s].n++;groups[s].net+=x.net});
+  let names=Object.keys(groups).sort();
+  let instrumentCount=names.filter(n=>n!=='General').length;
+  $('instCount').textContent=instrumentCount+' instrument'+(instrumentCount===1?'':'s');
+  $('instChips').innerHTML=names.map(s=>{
+    let g=groups[s],val=s==='General'?'__none':s;
+    return `<button type="button" class="chip${symFilter===val?' active':''}" data-sym="${val}"><b>${s}</b><small>${g.n} day${g.n===1?'':'s'} · ${g.n} entr${g.n===1?'y':'ies'}</small><small class="${g.net>=0?'positive':'negative'}">${fmt(g.net)}</small></button>`;
+  }).join('');
+  let sel=$('filterSym');
+  sel.innerHTML='<option value="">All</option>'+names.filter(n=>n!=='General').map(n=>`<option value="${n}"${symFilter===n?' selected':''}>${n}</option>`).join('')+(groups.General?`<option value="__none"${symFilter==='__none'?' selected':''}>General (no symbol)</option>`:'');
+  $('symbolList').innerHTML=names.filter(n=>n!=='General').map(n=>`<option value="${n}">`).join('');
+  // sort arrows
+  document.querySelectorAll('th[data-sort]').forEach(th=>{
+    let base=th.textContent.replace(/[▾▴]\s*$/,'');
+    th.textContent=base+(th.dataset.sort===sortKey?(sortDir===-1?' ▾':' ▴'):'');
+  });
+}
+
+/* ── View switching ── */
+function switchView(v){
+  currentView=v;
+  $('viewJournal').hidden=v!=='journal';
+  $('viewData').hidden=v!=='data';
+  $('tabJournal').classList.toggle('active',v==='journal');
+  $('tabData').classList.toggle('active',v==='data');
+  if(v==='data')page=1;
+  renderAll();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('tabJournal').onclick=()=>switchView('journal');
+$('tabData').onclick=()=>switchView('data');
+
+/* ── Journal controls ── */
+document.querySelectorAll('.ptab').forEach(b=>b.onclick=()=>{
+  periodDays=b.dataset.v==='all'?'all':Number(b.dataset.v);
+  document.querySelectorAll('.ptab').forEach(x=>x.classList.toggle('active',x===b));
+  renderJournal();
+});
+
+/* ── My Data controls ── */
+document.querySelectorAll('th[data-sort]').forEach(th=>th.onclick=()=>{
+  let k=th.dataset.sort;if(k==='dow')return;
+  if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==='date'||k==='note')?-1:-1}
+  page=1;renderData();
+});
+['search','filterType','from','to'].forEach(id=>$(id).addEventListener('input',()=>{page=1;renderData()}));
+$('filterSym').onchange=()=>{symFilter=$('filterSym').value;page=1;renderData()};
+$('instChips').onclick=e=>{
+  let b=e.target.closest('.chip');if(!b)return;
+  symFilter=symFilter===b.dataset.sym?'':b.dataset.sym;
+  $('filterSym').value=symFilter;page=1;renderData();
+};
+$('clearFilters').onclick=()=>{
+  $('search').value='';$('filterType').value='all';$('from').value='';$('to').value='';
+  symFilter='';$('filterSym').value='';page=1;renderData();
+};
+$('prevPage').onclick=()=>{if(page>1){page--;renderData()}};
+$('nextPage').onclick=()=>{page++;renderData()};
+
+/* ── Add / edit modal (shared) ── */
+function openModal(date){
+  editingDate=date||null;
+  $('modalTitle').textContent=date?'Edit entry — '+date:'Add a trading day';
+  $('modalSub').textContent=date?'Update or overwrite the record for this date.':'Enter the realised result for one day. Net is calculated for you.';
+  let e=date?entries[date]:null;
+  $('date').value=date||iso(today);$('gross').value=e?e.gross:'';$('charges').value=e?(e.charges||0):0;
+  $('symbol').value=e?(e.symbol||''):'';$('note').value=e?(e.note||''):'';
+  $('modal').classList.add('show');$('gross').focus();
+}
+function closeModal(){$('modal').classList.remove('show')}
+$('addBtn').onclick=()=>openModal();
+$('cancelBtn').onclick=closeModal;
+$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};
+$('entryForm').onsubmit=e=>{
+  e.preventDefault();let d=$('date').value;if(!d)return;
+  entries[d]={gross:Number($('gross').value),charges:Number($('charges').value||0),symbol:$('symbol').value.trim().toUpperCase(),note:$('note').value.trim()};
+  save();closeModal();renderAll();toast('Entry saved for '+d);
+};
+
+/* ── Confirm dialog ── */
+let confirmCb=null;
+function askConfirm(text,cb){$('confirmText').textContent=text;confirmCb=cb;$('confirm').classList.add('show')}
+$('confirmNo').onclick=()=>$('confirm').classList.remove('show');
+$('confirmYes').onclick=()=>{$('confirm').classList.remove('show');if(confirmCb)confirmCb()};
+$('confirm').onclick=e=>{if(e.target===$('confirm'))$('confirm').classList.remove('show')};
+
+/* ── Delete all ── */
+const wipe=()=>askConfirm('This permanently deletes every stored entry. Download a backup first. Continue?',()=>{
+  entries={};save();renderAll();toast('All data deleted');
+});
+$('wipeBtn2').onclick=wipe;
+
+/* ── Export / import ── */
+function dl(content,name,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+const csvOf=()=>{
+  let rows=[['Date','Gross P&L','Charges','Net P&L','Symbol','Note'],
+    ...Object.entries(entries).sort(([a],[b])=>a.localeCompare(b)).map(([d,e])=>[d,e.gross,e.charges||0,net(e),e.symbol||'',e.note||''])];
+  return rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');
+};
+function parseCsvLine(line){
+  let out=[],cur='',q=false;
+  for(let i=0;i<line.length;i++){let c=line[i];
+    if(q){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else{if(c==='"')q=true;else if(c===','){out.push(cur);cur=''}else cur+=c}}
+  out.push(cur);return out;
+}
+$('exportBtn').onclick=()=>{if(!Object.keys(entries).length)return toast('Nothing to export yet');dl(csvOf(),'tradeledger-pnl.csv','text/csv');toast('CSV downloaded')};
+$('exportCsv').onclick=()=>{if(!Object.keys(entries).length)return toast('Nothing to export yet');dl(csvOf(),'tradeledger-pnl.csv','text/csv');toast('CSV downloaded')};
+$('exportJson').onclick=()=>{
+  if(!Object.keys(entries).length)return toast('Nothing to back up yet');
+  dl(JSON.stringify({app:'TradeLedger',version:1,exported:new Date().toISOString(),entries},null,2),'tradeledger-backup.json','application/json');
+  toast('Backup downloaded');
+};
+$('importJson').onclick=()=>{$('fileInput').value='';$('fileInput').click()};
+$('fileInput').onchange=ev=>{
+  let file=ev.target.files[0];if(!file)return;
+  let fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      let added=0,updated=0;
+      if(file.name.endsWith('.json')){
+        let j=JSON.parse(fr.result),src=j.entries&&typeof j.entries==='object'?j.entries:j;
+        Object.entries(src).forEach(([d,e])=>{
+          if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&e&&e.gross!==undefined){
+            if(entries[d])updated++;else added++;
+            entries[d]={gross:Number(e.gross),charges:Number(e.charges||0),symbol:String(e.symbol||'').trim().toUpperCase(),note:String(e.note||'')};
+          }});
+      }else{
+        let lines=fr.result.trim().split(/\r?\n/);
+        lines.forEach((line,i)=>{
+          if(i===0&&/date/i.test(line))return;
+          let c=parseCsvLine(line);
+          if(!/^\d{4}-\d{2}-\d{2}$/.test(c[0]||''))return;
+          let sym='',note=c[4]||'';
+          if(c.length>=6){sym=(c[4]||'').trim().toUpperCase();note=c[5]||''}
+          if(entries[c[0]])updated++;else added++;
+          entries[c[0]]={gross:Number(c[1]),charges:Number(c[2]||0),symbol:sym,note:note};
+        });
+      }
+      if(!added&&!updated)return toast('No valid rows found in that file');
+      save();renderAll();toast(`Imported: ${added} new · ${updated} updated`);
+    }catch(err){toast('Could not read that file — use CSV or a TradeLedger JSON backup')}
+  };
+  fr.readAsText(file);
+};
+
+/* ── Live sync across tabs ── */
+window.addEventListener('storage',e=>{
+  if(e.key===key){try{entries=JSON.parse(e.newValue||'{}')||{}}catch(x){}renderAll()}
+});
+
+/* ── Toast ── */
+let toastTimer;
+function toast(msg){
+  $('toast').textContent=msg;$('toast').classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2600);
+}
+
+renderAll();
+</script>
+</body>
+</html>
