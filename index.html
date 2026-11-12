@@ -75,6 +75,7 @@ body{
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
 :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+[hidden]{display:none!important}
 ::selection{background:var(--sel)}
 
 .sheet{max-width:1240px;margin:34px auto 60px;background:var(--sheet);
@@ -629,6 +630,7 @@ function renderJournal(){
   $('winrate').textContent=(active?(wins.length/active*100):0).toFixed(1)+'%';
   $('winFoot').textContent=`${wins.length} winning · ${losses.length} losing`;
   $('best').textContent=best?fmt(best.net):'—';
+  $('best').className='strip-val '+(best?(best.net>0?'positive':'negative'):'');
   $('bestDate').textContent=best?shortDate(best.date):'no trades in view';
   $('worst').textContent=worst?fmt(worst.net):'—';
   $('worst').className='strip-val '+(worst&&worst.net<0?'negative':'');
@@ -947,7 +949,7 @@ $('entryForm').onsubmit=e=>{
 
 /* ── Confirm dialog ── */
 let confirmCb=null;
-function askConfirm(text,cb){$('confirmText').textContent=text;confirmCb=cb;$('confirm').classList.add('show')}
+function askConfirm(text,cb,label){$('confirmText').textContent=text;$('confirmYes').textContent=label||'Yes, delete';confirmCb=cb;$('confirm').classList.add('show')}
 $('confirmNo').onclick=()=>$('confirm').classList.remove('show');
 $('confirmYes').onclick=()=>{$('confirm').classList.remove('show');if(confirmCb)confirmCb()};
 $('confirm').onclick=e=>{if(e.target===$('confirm'))$('confirm').classList.remove('show')};
@@ -1204,7 +1206,7 @@ $('gChip').onclick=()=>askConfirm('Sign out of Google? The ledger stays on this 
   gToken=null;gProfile=null;gFileId=null;
   try{localStorage.removeItem('tradeledger_google')}catch(e){}
   gSignedInUI(false);gStatus('Signed out. Continue with Google to back up to Drive.');toast('Signed out of Google');
-});
+},'Sign out');
 function scheduleDriveBackup(){
   if(!gToken)return;
   clearTimeout(gBackupTimer);
