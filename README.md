@@ -27,6 +27,8 @@ Open <http://localhost:8000>. (Cloud sync requires the Firebase config below; ev
 
 ## Firebase setup (~5 minutes, free)
 
+**Already configured for the live site** — the production project `tradeledger-app` is wired up: Firestore (asia-south1), the per-user rules below, and both sign-in providers are live. This section remains for anyone forking the app and using their own backend.
+
 The app is fully functional without this — accounts and sync are the only parts that need it.
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project** (any name, e.g. "TradeLedger"). Analytics optional.
