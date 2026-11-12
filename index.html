@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TradeLedger">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 /* apply saved theme before first paint to avoid a flash */
 try{
@@ -102,6 +103,10 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .btn.icon{width:41px;padding:9px 0;text-align:center;font-size:15px}
 a.btn{text-decoration:none}
 .btn[disabled]{opacity:.35;pointer-events:none}
+.gchip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px}
+.gchip img{width:27px;height:27px;border-radius:50%;background:var(--paper);border:1px solid var(--btn-line)}
+.gchip span{font-size:12.5px;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.glogo{margin-right:4px;flex:none}
 
 .docrule{border:0;border-top:2.5px solid var(--rule-strong);margin:0}
 
@@ -287,13 +292,17 @@ td small{font-size:10.5px;color:var(--faint)}
 .chip.active small.negative{color:var(--chip-neg)}
 
 /* backup annex */
-.annex{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.annex{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .annex>div{padding:20px 24px;border-left:1px solid var(--rule);display:flex;flex-direction:column;gap:9px;min-width:0}
 .annex>div:first-child{border-left:0;padding-left:0}
 .annex h3{margin:0;font:600 16px/1.3 Newsreader,Georgia,serif}
 .annex p{margin:0;color:var(--muted);font-size:12.5px;flex:1}
 .annex .row{display:flex;gap:8px;flex-wrap:wrap}
-@media(max-width:900px){.annex{grid-template-columns:1fr}
+@media(max-width:1100px){.annex{grid-template-columns:repeat(2,1fr)}
+  .annex>div{border-top:1px solid var(--rule)}
+  .annex>div:nth-child(-n+2){border-top:0}
+  .annex>div:nth-child(2n+1){border-left:0;padding-left:0}}
+@media(max-width:680px){.annex{grid-template-columns:1fr}
   .annex>div{border-left:0;padding-left:0;border-top:1px solid var(--rule)}
   .annex>div:first-child{border-top:0}}
 
@@ -345,6 +354,7 @@ footer b{color:var(--muted);font-weight:600}
     <button class="btn icon" id="themeBtn" aria-label="Switch between day and night ink" title="Day / night ink">☾</button>
     <button class="btn" id="exportBtn">Export CSV</button>
     <button class="btn primary" id="addBtn">Add P&amp;L</button>
+    <button class="btn gchip" id="gChip" hidden title="Sign out of Google"><img id="gPic" alt=""><span id="gName"></span></button>
   </div>
 </header>
 <hr class="docrule">
@@ -509,6 +519,15 @@ footer b{color:var(--muted);font-weight:600}
       <p>Erases every stored entry. Download a backup first — this cannot be undone… but for a few seconds, Undo saves you.</p>
       <div class="row"><button class="btn danger" id="wipeBtn2">Delete all data</button></div>
     </div>
+    <div>
+      <h3>Google Drive</h3>
+      <p id="gStatus">Continue with Google to keep an automatic backup in your own Drive's hidden app folder — only this app can read it.</p>
+      <div class="row">
+        <button class="btn" id="gSignIn"><svg class="glogo" width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2.1 5.2-4.5 6.8v5.6h7.3c4.3-4 6.5-9.8 6.5-16.4z"/><path fill="#34A853" d="M24 46c6.1 0 11.2-2 15-5.4l-7.3-5.6c-2 1.4-4.6 2.2-7.7 2.2-6 0-11-4-12.8-9.4H3.7v5.8C7.4 41 15.1 46 24 46z"/><path fill="#FBBC04" d="M11.2 27.8c-.5-1.4-.7-2.9-.7-4.3s.3-3 .7-4.3v-5.8H3.7C2.1 16.6 1.2 20.2 1.2 23.5s.9 6.9 2.5 10.1l7.5-5.8z"/><path fill="#EA4335" d="M24 10.8c3.4 0 6.4 1.2 8.8 3.4l6.6-6.6C35.2 3.6 30.1 1.6 24 1.6 15.1 1.6 7.4 6.6 3.7 13.4l7.5 5.8C13 13.8 18 10.8 24 10.8z"/></svg>Continue with Google</button>
+        <button class="btn" id="gBackup" hidden>Back up now</button>
+        <button class="btn" id="gRestore" hidden>Restore</button>
+      </div>
+    </div>
   </div>
 </section>
 </div>
@@ -549,6 +568,17 @@ footer b{color:var(--muted);font-weight:600}
     </div>
   </div>
 </div>
+<div class="modal-backdrop" id="syncModal">
+  <div class="modal">
+    <h3>Drive copy differs</h3>
+    <p id="syncText"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="syncLater">Later</button>
+      <button type="button" class="btn" id="syncMine">Keep mine</button>
+      <button type="button" class="btn primary" id="syncDrive">Use Drive copy</button>
+    </div>
+  </div>
+</div>
 <input type="file" id="fileInput" accept=".csv,.json" hidden>
 <div class="toast" id="toast"><span id="toastMsg"></span><button class="toast-btn" id="toastUndo" hidden>Undo</button></div>
 
@@ -562,7 +592,7 @@ let entries={},periodDays=365,sortKey='date',sortDir=-1,page=1,perPage=25,editin
 try{entries=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){entries={}}
 const today=new Date();
 const iso=d=>{let x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
-function save(){localStorage.setItem(key,JSON.stringify(entries));localStorage.setItem('tradeledger_last_modified',new Date().toISOString())}
+function save(){localStorage.setItem(key,JSON.stringify(entries));localStorage.setItem('tradeledger_last_modified',new Date().toISOString());scheduleDriveBackup()}
 function net(e){return Number(e.gross)-Number(e.charges||0)}
 function all(){return Object.entries(entries).map(([date,e])=>({date,day:DOW[new Date(date+'T00:00:00').getDay()],gross:Number(e.gross),charges:Number(e.charges||0),net:net(e),symbol:(e.symbol||'').toUpperCase(),note:e.note||''}))}
 const periodName={30:'last 30 days',90:'last 90 days',365:'last 12 months',all:'all time'};
@@ -1017,6 +1047,176 @@ $('toastUndo').onclick=()=>{clearTimeout(toastTimer);$('toast').classList.remove
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
   addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 }
+
+/* ── Google sign-in & Drive backup ─────────────────────────────
+   One-time setup (free, ~2 minutes):
+     1. console.cloud.google.com → APIs & Services → Credentials
+     2. Create credentials → OAuth client ID → Web application
+     3. Under "Authorized JavaScript origins" add:
+          https://r1t1kkumar.github.io
+        (and your local dev origin, e.g. http://localhost:5500)
+     4. Paste the client ID below (ends in .apps.googleusercontent.com)
+   Without it, everything else in the app keeps working normally. */
+const GOOGLE_CLIENT_ID = ''; // e.g. '1234567890-abc.apps.googleusercontent.com'
+const DRIVE_NAME = 'tradeledger-backup.json';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile';
+let gToken=null,gTokenAt=0,gProfile=null,gFileId=null,gTokenClient=null,gSilentResolve=null,gBackupTimer=null,pendingRemote=null;
+
+function gReady(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
+function gAuth(){return{Authorization:'Bearer '+gToken}}
+function gStatus(t){$('gStatus').textContent=t}
+const when=ts=>{let d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})};
+
+function gEnsureClient(){
+  if(!gReady()||!GOOGLE_CLIENT_ID)return null;
+  if(!gTokenClient){
+    gTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:GOOGLE_CLIENT_ID,scope:DRIVE_SCOPE,
+      callback:resp=>{
+        if(gSilentResolve){
+          let r=gSilentResolve;gSilentResolve=null;
+          if(resp.error)r(null);
+          else{gToken=resp.access_token;gTokenAt=Date.now();r(gToken)}
+          return;
+        }
+        if(resp.error){toast('Google sign-in was cancelled');gStatus('Sign in to back up to Drive');return}
+        gToken=resp.access_token;gTokenAt=Date.now();gOnSignedIn();
+      }
+    });
+  }
+  return gTokenClient;
+}
+function gSilent(){
+  return new Promise(res=>{
+    let c=gEnsureClient();
+    if(!c)return res(null);
+    gSilentResolve=res;
+    try{c.requestAccessToken({prompt:''})}catch(e){gSilentResolve=null;res(null)}
+  });
+}
+$('gSignIn').onclick=()=>{
+  if(!GOOGLE_CLIENT_ID){toast('Setup needed — see the note inside the Google Drive card');gStatus('Setup: create an OAuth client ID and paste it into index.html (search “GOOGLE_CLIENT_ID”), then reload. Authorized origin: '+location.origin);return}
+  let c=gEnsureClient();
+  if(!c)return toast('Google did not load — check your connection and reload');
+  gStatus('Opening Google…');
+  c.requestAccessToken();
+};
+function paintChip(){
+  let img=$('gPic'),lbl=$('gName');
+  if(gProfile&&gProfile.picture){img.src=gProfile.picture;img.alt=gProfile.name||'profile'}
+  else img.removeAttribute('src');
+  lbl.textContent=gProfile&&gProfile.name?gProfile.name.split(' ')[0]:'Account';
+}
+function gSignedInUI(on){
+  $('gSignIn').hidden=on;$('gBackup').hidden=!on;$('gRestore').hidden=!on;$('gChip').hidden=!on;
+  if(on)paintChip();
+}
+async function gOnSignedIn(){
+  gSignedInUI(true);gStatus('Checking your Drive backup…');
+  try{
+    let r=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:gAuth()});
+    if(r.ok){let u=await r.json();gProfile={name:u.name,picture:u.picture};try{localStorage.setItem('tradeledger_google',JSON.stringify(gProfile))}catch(e){}paintChip()}
+  }catch(e){}
+  driveSync();
+}
+async function gApi(){
+  if(!gToken)return null;
+  if(Date.now()-gTokenAt>50*60*1000){let t=await gSilent();if(!t){gSignedInUI(false);gStatus('Session expired — continue with Google again');return null}}
+  return gToken;
+}
+async function driveFind(){
+  if(!await gApi())return null;
+  let r=await fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,modifiedTime)&pageSize=50',{headers:gAuth()});
+  if(!r.ok)return null;
+  let j=await r.json();
+  let files=(j.files||[]).filter(f=>f.name===DRIVE_NAME).sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime));
+  gFileId=files[0]?files[0].id:null;
+  return files[0]||null;
+}
+async function driveUpload(silent){
+  if(!await gApi())return false;
+  let payload=JSON.stringify({app:'TradeLedger',version:1,exported:new Date().toISOString(),entries});
+  let ok=false;
+  try{
+    if(gFileId){
+      let r=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+gFileId+'?uploadType=media',{method:'PATCH',headers:{...gAuth(),'Content-Type':'application/json'},body:payload});
+      ok=r.ok;
+    }else{
+      let b='tl'+Date.now();
+      let meta={name:DRIVE_NAME,parents:['appDataFolder']};
+      let body=`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${payload}\r\n--${b}--`;
+      let r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{...gAuth(),'Content-Type':'multipart/related; boundary='+b},body});
+      if(r.ok){gFileId=(await r.json()).id;ok=true}
+    }
+  }catch(e){}
+  if(ok){
+    localStorage.setItem('tradeledger_last_backup',new Date().toISOString());
+    renderData();
+    gStatus(silent?('Auto-backed up to Drive · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})):'Backup saved in your Drive');
+    if(!silent)toast('Backed up to Google Drive');
+  }else if(!silent)toast('Drive backup failed — try again');
+  return ok;
+}
+async function driveDownload(){
+  if(!await gApi()||!gFileId)return null;
+  let r=await fetch('https://www.googleapis.com/drive/v3/files/'+gFileId+'?alt=media',{headers:gAuth()});
+  if(!r.ok)return null;
+  try{return await r.json()}catch(e){return null}
+}
+function closeSync(){pendingRemote=null;$('syncModal').classList.remove('show')}
+async function driveSync(){
+  let file=await driveFind();
+  if(!file){
+    if(Object.keys(entries).length){gStatus('Saving your first Drive backup…');await driveUpload(true)}
+    else gStatus('Signed in. Your first backup is written when you record a day.');
+    return;
+  }
+  let remote=await driveDownload();
+  if(!remote){gStatus('Could not read the Drive backup — try Restore');return}
+  let remoteEntries=remote.entries&&typeof remote.entries==='object'?remote.entries:{};
+  const canon=o=>JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));
+  if(canon(remoteEntries)===canon(entries)){gStatus('In sync with Drive · last backup '+when(file.modifiedTime));return}
+  let rCount=Object.keys(remoteEntries).length,lCount=Object.keys(entries).length;
+  let lMod=localStorage.getItem('tradeledger_last_modified');
+  $('syncText').innerHTML=`Drive copy: <b>${rCount} entr${rCount===1?'y':'ies'}</b>, ${when(file.modifiedTime)}<br>This device: <b>${lCount} entr${lCount===1?'y':'ies'}</b>${lMod?', last change '+when(lMod):''}<br>Which version should the ledger keep?`;
+  pendingRemote=remoteEntries;
+  $('syncModal').classList.add('show');
+}
+$('syncDrive').onclick=()=>{if(pendingRemote){entries=pendingRemote;save();renderAll()}closeSync();toast('Restored from Google Drive')};
+$('syncMine').onclick=()=>{pendingRemote=null;$('syncModal').classList.remove('show');driveUpload(false)};
+$('syncLater').onclick=closeSync;
+$('syncModal').onclick=e=>{if(e.target===$('syncModal'))closeSync()};
+$('gBackup').onclick=()=>driveUpload(false);
+$('gRestore').onclick=async()=>{
+  let file=await driveFind();
+  if(!file)return toast('No backup in your Drive yet');
+  let remote=await driveDownload();
+  if(!remote)return toast('Could not read the Drive backup');
+  let remoteEntries=remote.entries&&typeof remote.entries==='object'?remote.entries:{};
+  let rCount=Object.keys(remoteEntries).length;
+  if(!rCount)return toast('The Drive backup is empty');
+  $('syncText').innerHTML=`Replace this device's ledger with the Drive copy?<br><b>${rCount} entr${rCount===1?'y':'ies'}</b>, ${when(file.modifiedTime)}`;
+  pendingRemote=remoteEntries;
+  $('syncModal').classList.add('show');
+};
+$('gChip').onclick=()=>askConfirm('Sign out of Google? The ledger stays on this device, and the backup stays in your Drive.',()=>{
+  try{google.accounts.oauth2.revoke(gToken,()=>{})}catch(e){}
+  gToken=null;gProfile=null;gFileId=null;
+  try{localStorage.removeItem('tradeledger_google')}catch(e){}
+  gSignedInUI(false);gStatus('Signed out. Continue with Google to back up to Drive.');toast('Signed out of Google');
+});
+function scheduleDriveBackup(){
+  if(!gToken)return;
+  clearTimeout(gBackupTimer);
+  gBackupTimer=setTimeout(async()=>{if(await gApi())await driveUpload(true)},4000);
+}
+(async function gInit(){
+  if(!GOOGLE_CLIENT_ID){gStatus('Setup: create an OAuth client ID (search “GOOGLE_CLIENT_ID” in this file), then reload. Authorized origin: '+location.origin);return}
+  try{gProfile=JSON.parse(localStorage.getItem('tradeledger_google')||'null')}catch(e){}
+  if(!gProfile)return;
+  let t=await gSilent();
+  if(t){gSignedInUI(true);gStatus('Checking your Drive backup…');driveSync()}
+})();
 
 renderAll();
 </script>
