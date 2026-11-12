@@ -20,7 +20,7 @@ Any static server works:
 
 ```bash
 python3 -m http.server 8000
-# or: npx serve
+# or: pnpm dlx serve
 ```
 
 Open <http://localhost:8000>. (Cloud sync requires the Firebase config below; everything else works immediately.)

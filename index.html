@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TradeLedger">
@@ -436,7 +437,7 @@ footer b{color:var(--muted);font-weight:600}
     </div>
     <div>
       <div class="postcard">
-        <div class="post-date">Friday, 14 November</div>
+        <div class="post-date">Friday, 13 November</div>
         <div class="post-line"><span>NIFTY</span><i></i><b>₹2,850</b></div>
         <div class="post-line"><span>BITCOINUSDT</span><i></i><b class="negative">−₹1,120</b></div>
         <div class="post-line"><span>CRUDEOIL</span><i></i><b>₹640</b></div>
@@ -516,7 +517,7 @@ footer b{color:var(--muted);font-weight:600}
 </div>
 
 <div class="strip">
-  <div><div class="strip-label">Win rate</div><div class="strip-val" id="winrate">0%</div><div class="strip-foot" id="winFoot">0 winning · 0 losing days</div></div>
+  <div><div class="strip-label">Win rate</div><div class="strip-val" id="winrate">0%</div><div class="strip-foot" id="winFoot">0 winning · 0 losing</div></div>
   <div><div class="strip-label">Best day</div><div class="strip-val" id="best">—</div><div class="strip-foot" id="bestDate">no trades in view</div></div>
   <div><div class="strip-label">Worst day</div><div class="strip-val" id="worst">—</div><div class="strip-foot" id="worstDate">no trades in view</div></div>
   <div><div class="strip-label">Average / day</div><div class="strip-val" id="average">₹0</div><div class="strip-foot" id="avgFoot">per active trading day</div></div>
@@ -795,7 +796,7 @@ function renderJournal(){
   $('heroNet').textContent=fmt(sum);
   $('heroNet').className='hero-net '+(sum>0?'positive':sum<0?'negative':'');
   $('heroLabel').textContent='Net P&L · '+(periodName[periodDays]||'all time');
-  $('heroFoot').textContent=active?`after charges · ${active} recorded trading day${active===1?'':'s'}`:'Nothing recorded yet — add your first day below';
+  $('heroFoot').textContent=active?`after charges · ${active} recorded trading day${active===1?'':'s'}`:'Nothing recorded yet — add your first day';
   const st=$('stamp');
   if(!active){st.hidden=true}
   else{st.hidden=false;st.textContent=sum>0?'Net profit':sum<0?'Net loss':'No net change';
@@ -982,7 +983,7 @@ function renderData(){
   let body=$('rows');body.innerHTML='';
   slice.forEach(e=>{
     let tr=document.createElement('tr');
-    let cells=[e.date,e.day,e.symbol||'—',fmt(e.gross),e.charges?fmt(e.charges):'—',fmt(e.net),e.note?e.note:'—'];
+    let cells=[e.date,e.day,e.symbol||'—',fmt(e.gross),e.charges?fmt(e.charges):'—',fmt(e.net),e.note?e.note:'—',''];
     cells.forEach((v,i)=>{
       let td=document.createElement('td');td.textContent=v;
       if(i===5)td.className=e.net>0?'positive':e.net<0?'negative':'';
@@ -1013,7 +1014,7 @@ function renderData(){
   let total=Object.keys(entries).length,dates=Object.keys(entries).sort(),sum=all().reduce((a,e)=>a+e.net,0);
   $('stTotal').textContent=total;
   $('stRange').textContent=dates.length?`${dates[0]} → ${dates[dates.length-1]}`:'no records yet';
-  $('stNet').textContent=fmt(sum);$('stNet').className='strip-val '+(sum>=0?'positive':'negative');
+  $('stNet').textContent=fmt(sum);$('stNet').className='strip-val '+(sum>0?'positive':sum<0?'negative':'');
   let size=new Blob([localStorage.getItem(key)||'']).size;
   $('stSize').textContent=size>1024?(size/1024).toFixed(1)+' KB':size+' B';
   let mod=localStorage.getItem('tradeledger_last_modified');
@@ -1237,7 +1238,7 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
    Configured for the production project "tradeledger-app". */
 const FIREBASE_CONFIG={apiKey:'AIzaSyBE_QYTk_vnN36evjSR5q3piXwJv1s2Ivw',authDomain:'tradeledger-app.firebaseapp.com',projectId:'tradeledger-app',appId:'1:778641700982:web:3da04ccc57b921eb000757'};
 const CLOUD=!!(FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.projectId);
-let curUser=null,cloudUnsub=null,syncingFromCloud=false,setupShown=false,pendingWelcome=false;
+let curUser=null,cloudUnsub=null,setupShown=false,pendingWelcome=false;
 
 const canon=o=>JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));
 const when=ts=>{let d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})};
@@ -1338,7 +1339,7 @@ $('authForm').onsubmit=e=>{
     pendingWelcome=true;
     p=firebase.auth().createUserWithEmailAndPassword(email,pass);
   }
-  p.then(done).catch(err=>{done();authErr(AUTH_FRIENDLY[err.code]||err.message)});
+  p.then(()=>{done();if(authMode!=='forgot')authClose()}).catch(err=>{done();authErr(AUTH_FRIENDLY[err.code]||err.message)});
 };
 $('authGoogle').onclick=()=>{
   if(!CLOUD){authErr('Cloud sync isn\'t configured yet — see the Cloud sync card in My Data.');return}
@@ -1360,7 +1361,7 @@ const userCol=()=>firebase.firestore().collection('users').doc(curUser.uid).coll
 
 async function flushCloud(){
   if(!CLOUD||!curUser||!dirty.size)return;
-  let db=userCol(),batch=db.batch(),n=0;
+  let db=userCol(),batch=firebase.firestore().batch(),n=0;
   for(const[d,kind]of dirty){
     if(kind==='up'){
       let e=entries[d];if(!e){dirty.delete(d);continue}
@@ -1368,7 +1369,7 @@ async function flushCloud(){
       if(!e.updatedAt)e.updatedAt=rec.updatedAt;
       batch.set(db.doc(d),rec);
     }else batch.delete(db.doc(d));
-    n++;if(n===450){await batch.commit();batch=db.batch();n=0}
+    n++;if(n===450){await batch.commit();batch=firebase.firestore().batch();n=0}
   }
   dirty.clear();
   try{
@@ -1387,7 +1388,7 @@ async function initialMerge(){
     let snap=await userCol().get();
     let remote={};
     snap.forEach(doc=>remote[doc.id]=doc.data());
-    let batch=userCol().batch(),touched=false;
+    let batch=firebase.firestore().batch(),touched=false;
     for(const[d,e]of Object.entries(entries)){
       let r=remote[d];
       if(!r){
@@ -1406,9 +1407,13 @@ async function initialMerge(){
       if(l&&!l.updatedAt)continue; /* legacy local entries were just uploaded */
       entries[d]={gross:Number(r.gross),charges:Number(r.charges||0),symbol:r.symbol||'',note:r.note||'',updatedAt:r.updatedAt||new Date().toISOString()};
     }
+    let upCount=Object.keys(entries).filter(d=>!remote[d]).length;
     localStorage.setItem(key,JSON.stringify(entries));
     renderAll();
-    accStatus(`Signed in as ${curUser.email} — synced ${Object.keys(remote).length} cloud entr${Object.keys(remote).length===1?'y':'ies'}.`);
+    let rn=Object.keys(remote).length;
+    accStatus(upCount
+      ? `Signed in as ${curUser.email} — uploaded ${upCount} local entr${upCount===1?'y':'ies'} to your cloud.`
+      : `Signed in as ${curUser.email} — synced ${rn} cloud entr${rn===1?'y':'ies'}.`);
   }catch(err){
     accStatus('Could not load your cloud data ('+err.code+') — working offline.');
   }

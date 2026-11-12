@@ -1,6 +1,6 @@
 /* TradeLedger service worker — network-first for the page so updates land,
    cache-first for everything else, cache fallback for offline. */
-const VERSION = 'tradeledger-v4';
+const VERSION = 'tradeledger-v5';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

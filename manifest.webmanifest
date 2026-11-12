@@ -1,7 +1,7 @@
 {
   "name": "TradeLedger — P&L Journal",
   "short_name": "TradeLedger",
-  "description": "A daily trading P&L journal. Track net profit per instrument, equity curve, month-by-month review, CSV and JSON backup. Your data stays in your browser.",
+  "description": "A daily trading P&L journal. Net after charges, equity curve, a year of green and red squares, month-by-month review. Works offline; a free account syncs across devices.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
