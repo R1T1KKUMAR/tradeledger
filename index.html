@@ -13,7 +13,9 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TradeLedger">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* apply saved theme before first paint to avoid a flash */
 try{
@@ -324,6 +326,16 @@ html[data-theme="night"] .modal-backdrop{background:#000000AA}
 .hint{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.5}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
 
+/* auth modal */
+.auth-err{margin-top:14px;color:var(--loss);font-size:12.5px;line-height:1.5}
+.auth-alt{display:flex;justify-content:center;gap:18px;margin-top:14px;flex-wrap:wrap}
+.linklike{background:none;border:0;padding:0;font-size:12.5px;color:var(--muted);
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.linklike:hover{color:var(--ink)}
+.orrule{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--faint);font-size:11px;
+  text-transform:uppercase;letter-spacing:.12em}
+.orrule::before,.orrule::after{content:'';flex:1;border-top:1px solid var(--rule)}
+
 /* toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--sheet);border:1.5px solid var(--ink);border-radius:4px;color:var(--ink);
@@ -521,12 +533,12 @@ footer b{color:var(--muted);font-weight:600}
       <div class="row"><button class="btn danger" id="wipeBtn2">Delete all data</button></div>
     </div>
     <div>
-      <h3>Google Drive</h3>
-      <p id="gStatus">Continue with Google to keep an automatic backup in your own Drive's hidden app folder — only this app can read it.</p>
+      <h3>Cloud sync</h3>
+      <p id="accStatus">Create a free account to sync your ledger across devices — a private database only you can read.</p>
       <div class="row">
-        <button class="btn" id="gSignIn"><svg class="glogo" width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2.1 5.2-4.5 6.8v5.6h7.3c4.3-4 6.5-9.8 6.5-16.4z"/><path fill="#34A853" d="M24 46c6.1 0 11.2-2 15-5.4l-7.3-5.6c-2 1.4-4.6 2.2-7.7 2.2-6 0-11-4-12.8-9.4H3.7v5.8C7.4 41 15.1 46 24 46z"/><path fill="#FBBC04" d="M11.2 27.8c-.5-1.4-.7-2.9-.7-4.3s.3-3 .7-4.3v-5.8H3.7C2.1 16.6 1.2 20.2 1.2 23.5s.9 6.9 2.5 10.1l7.5-5.8z"/><path fill="#EA4335" d="M24 10.8c3.4 0 6.4 1.2 8.8 3.4l6.6-6.6C35.2 3.6 30.1 1.6 24 1.6 15.1 1.6 7.4 6.6 3.7 13.4l7.5 5.8C13 13.8 18 10.8 24 10.8z"/></svg>Continue with Google</button>
-        <button class="btn" id="gBackup" hidden>Back up now</button>
-        <button class="btn" id="gRestore" hidden>Restore</button>
+        <button class="btn primary" id="accCreate">Create account</button>
+        <button class="btn" id="accSignin">Sign in</button>
+        <button class="btn" id="accSignout" hidden>Sign out</button>
       </div>
     </div>
   </div>
@@ -569,15 +581,30 @@ footer b{color:var(--muted);font-weight:600}
     </div>
   </div>
 </div>
-<div class="modal-backdrop" id="syncModal">
+<div class="modal-backdrop" id="authModal">
   <div class="modal">
-    <h3>Drive copy differs</h3>
-    <p id="syncText"></p>
-    <div class="modal-actions">
-      <button type="button" class="btn" id="syncLater">Later</button>
-      <button type="button" class="btn" id="syncMine">Keep mine</button>
-      <button type="button" class="btn primary" id="syncDrive">Use Drive copy</button>
+    <h3 id="authTitle">Create your account</h3>
+    <p id="authSub">Your ledger gets a private cloud database — sync across devices, nothing shared.</p>
+    <form id="authForm" autocomplete="on">
+      <div class="form-grid">
+        <div class="field full"><label for="authEmail">Email</label><input id="authEmail" type="email" required placeholder="you@example.com" autocomplete="email"></div>
+        <div class="field full"><label for="authPass">Password</label><input id="authPass" type="password" required minlength="6" placeholder="at least 6 characters" autocomplete="current-password"></div>
+      </div>
+      <div class="auth-err" id="authErr" hidden></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="authCancel">Cancel</button>
+        <button class="btn primary" type="submit" id="authGo">Create account</button>
+      </div>
+    </form>
+    <div class="auth-alt">
+      <button type="button" class="linklike" id="authToggle">I already have an account — sign in</button>
+      <button type="button" class="linklike" id="authForgot" hidden>Forgot password?</button>
     </div>
+    <div class="orrule"><span>or</span></div>
+    <button type="button" class="btn" id="authGoogle" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px">
+      <svg class="glogo" width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2.1 5.2-4.5 6.8v5.6h7.3c4.3-4 6.5-9.8 6.5-16.4z"/><path fill="#34A853" d="M24 46c6.1 0 11.2-2 15-5.4l-7.3-5.6c-2 1.4-4.6 2.2-7.7 2.2-6 0-11-4-12.8-9.4H3.7v5.8C7.4 41 15.1 46 24 46z"/><path fill="#FBBC04" d="M11.2 27.8c-.5-1.4-.7-2.9-.7-4.3s.3-3 .7-4.3v-5.8H3.7C2.1 16.6 1.2 20.2 1.2 23.5s.9 6.9 2.5 10.1l7.5-5.8z"/><path fill="#EA4335" d="M24 10.8c3.4 0 6.4 1.2 8.8 3.4l6.6-6.6C35.2 3.6 30.1 1.6 24 1.6 15.1 1.6 7.4 6.6 3.7 13.4l7.5 5.8C13 13.8 18 10.8 24 10.8z"/></svg>
+      Continue with Google
+    </button>
   </div>
 </div>
 <input type="file" id="fileInput" accept=".csv,.json" hidden>
@@ -593,7 +620,15 @@ let entries={},periodDays=365,sortKey='date',sortDir=-1,page=1,perPage=25,editin
 try{entries=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){entries={}}
 const today=new Date();
 const iso=d=>{let x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
-function save(){localStorage.setItem(key,JSON.stringify(entries));localStorage.setItem('tradeledger_last_modified',new Date().toISOString());scheduleDriveBackup()}
+const dirty=new Map();let cloudTimer=null;
+function markDirty(d){if(d)dirty.set(d,entries[d]?'up':'del')}
+function scheduleCloudSave(){if(!CLOUD||!curUser)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(flushCloud,2500)}
+function save(changed){
+  (changed||[]).forEach(markDirty);
+  localStorage.setItem(key,JSON.stringify(entries));
+  localStorage.setItem('tradeledger_last_modified',new Date().toISOString());
+  scheduleCloudSave();
+}
 function net(e){return Number(e.gross)-Number(e.charges||0)}
 function all(){return Object.entries(entries).map(([date,e])=>({date,day:DOW[new Date(date+'T00:00:00').getDay()],gross:Number(e.gross),charges:Number(e.charges||0),net:net(e),symbol:(e.symbol||'').toUpperCase(),note:e.note||''}))}
 const periodName={30:'last 30 days',90:'last 90 days',365:'last 12 months',all:'all time'};
@@ -821,8 +856,8 @@ function renderData(){
         let de=document.createElement('button');de.className='icon-btn del';de.textContent='Delete';
         de.onclick=()=>{
           askConfirm(`Delete the entry for ${e.date}?`,()=>{
-            let snap=entries[e.date];delete entries[e.date];save();renderAll();
-            toast(`Entry for ${e.date} deleted`,()=>{entries[e.date]=snap;save();renderAll();toast('Entry restored')});
+            let snap=entries[e.date];delete entries[e.date];save([e.date]);renderAll();
+            toast(`Entry for ${e.date} deleted`,()=>{entries[e.date]=snap;save([e.date]);renderAll();toast('Entry restored')});
           });
         };
         td.append(ed,de);
@@ -937,13 +972,14 @@ $('entryForm').onsubmit=e=>{
   let prevD=entries[d]||null;
   let moved=editingDate&&editingDate!==d?editingDate:null;
   let prevMoved=moved?entries[moved]:null;
-  entries[d]={gross:Number($('gross').value),charges:Number($('charges').value||0),symbol:$('symbol').value.trim().toUpperCase(),note:$('note').value.trim()};
+  let changed=[d];if(moved)changed.push(moved);
+  entries[d]={gross:Number($('gross').value),charges:Number($('charges').value||0),symbol:$('symbol').value.trim().toUpperCase(),note:$('note').value.trim(),updatedAt:new Date().toISOString()};
   if(moved)delete entries[moved];
-  save();editingDate=null;closeModal();renderAll();
+  save(changed);editingDate=null;closeModal();renderAll();
   toast(`Entry saved for ${d}`,()=>{
     if(prevD)entries[d]=prevD;else delete entries[d];
     if(moved&&prevMoved)entries[moved]=prevMoved;
-    save();renderAll();toast('Restored the previous version');
+    save(changed);renderAll();toast('Restored the previous version');
   });
 };
 
@@ -956,9 +992,9 @@ $('confirm').onclick=e=>{if(e.target===$('confirm'))$('confirm').classList.remov
 
 /* ── Delete all (with undo) ── */
 $('wipeBtn2').onclick=()=>askConfirm('This permanently deletes every stored entry. Download a backup first. Continue?',()=>{
-  let snapshot={...entries};entries={};save();renderAll();
-  toast('All data deleted',()=>{entries=snapshot;save();renderAll();toast('Everything restored')});
-});
+  let snapshot={...entries};let touched=Object.keys(entries);entries={};save(touched);renderAll();
+  toast('All data deleted',()=>{entries=snapshot;Object.values(entries).forEach(e=>{if(!e.updatedAt)e.updatedAt=new Date().toISOString()});save(Object.keys(entries));renderAll();toast('Everything restored')});
+},'Yes, delete everything');
 
 /* ── Export / import ── */
 function dl(content,name,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
@@ -988,13 +1024,14 @@ $('fileInput').onchange=ev=>{
   let fr=new FileReader();
   fr.onload=()=>{
     try{
-      let added=0,updated=0;
+      let added=0,updated=0,touched=[];
       if(file.name.endsWith('.json')){
         let j=JSON.parse(fr.result),src=j.entries&&typeof j.entries==='object'?j.entries:j;
         Object.entries(src).forEach(([d,e])=>{
           if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&e&&e.gross!==undefined){
             if(entries[d])updated++;else added++;
-            entries[d]={gross:Number(e.gross),charges:Number(e.charges||0),symbol:String(e.symbol||'').trim().toUpperCase(),note:String(e.note||'')};
+            touched.push(d);
+            entries[d]={gross:Number(e.gross),charges:Number(e.charges||0),symbol:String(e.symbol||'').trim().toUpperCase(),note:String(e.note||''),updatedAt:new Date().toISOString()};
           }});
       }else{
         let lines=fr.result.trim().split(/\r?\n/);
@@ -1005,11 +1042,12 @@ $('fileInput').onchange=ev=>{
           let sym='',note=c[4]||'';
           if(c.length>=6){sym=(c[4]||'').trim().toUpperCase();note=c[5]||''}
           if(entries[c[0]])updated++;else added++;
-          entries[c[0]]={gross:Number(c[1]),charges:Number(c[2]||0),symbol:sym,note:note};
+          touched.push(c[0]);
+          entries[c[0]]={gross:Number(c[1]),charges:Number(c[2]||0),symbol:sym,note:note,updatedAt:new Date().toISOString()};
         });
       }
       if(!added&&!updated)return toast('No valid rows found in that file');
-      save();renderAll();toast(`Imported: ${added} new · ${updated} updated`);
+      save(touched);renderAll();toast(`Imported: ${added} new · ${updated} updated`);
     }catch(err){toast('Could not read that file — use CSV or a TradeLedger JSON backup')}
   };
   fr.readAsText(file);
@@ -1050,175 +1088,235 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 }
 
-/* ── Google sign-in & Drive backup ─────────────────────────────
-   One-time setup (free, ~2 minutes):
-     1. console.cloud.google.com → APIs & Services → Credentials
-     2. Create credentials → OAuth client ID → Web application
-     3. Under "Authorized JavaScript origins" add:
-          https://r1t1kkumar.github.io
-        (and your local dev origin, e.g. http://localhost:5500)
-     4. Paste the client ID below (ends in .apps.googleusercontent.com)
-   Without it, everything else in the app keeps working normally. */
-const GOOGLE_CLIENT_ID = ''; // e.g. '1234567890-abc.apps.googleusercontent.com'
-const DRIVE_NAME = 'tradeledger-backup.json';
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile';
-let gToken=null,gTokenAt=0,gProfile=null,gFileId=null,gTokenClient=null,gSilentResolve=null,gBackupTimer=null,pendingRemote=null;
+/* ── Cloud sync: Firebase Auth + Firestore ─────────────────────
+   One-time setup (free, ~5 minutes):
+     1. console.firebase.google.com → Add project
+     2. Build → Authentication → Get started → enable
+        Email/Password and Google as sign-in providers
+     3. Build → Firestore Database → Create database (start in
+        production mode; regional location is fine)
+     4. Project settings (gear) → Your apps → Web (</>) → register
+        app "TradeLedger" → copy the firebaseConfig values below
+     5. Authentication → Settings → Authorized domains → add:
+          r1t1kkumar.github.io
+     6. Firestore → Rules → paste the contents of firestore.rules
+        from the project repo → Publish
+   Without a config, everything else keeps working locally and the
+   card below shows these instructions. */
+const FIREBASE_CONFIG={apiKey:'',authDomain:'',projectId:'',appId:''};
+const CLOUD=!!(FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.projectId);
+let curUser=null,cloudUnsub=null,syncingFromCloud=false,setupShown=false;
 
-function gReady(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
-function gAuth(){return{Authorization:'Bearer '+gToken}}
-function gStatus(t){$('gStatus').textContent=t}
+const canon=o=>JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));
 const when=ts=>{let d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})};
 
-function gEnsureClient(){
-  if(!gReady()||!GOOGLE_CLIENT_ID)return null;
-  if(!gTokenClient){
-    gTokenClient=google.accounts.oauth2.initTokenClient({
-      client_id:GOOGLE_CLIENT_ID,scope:DRIVE_SCOPE,
-      callback:resp=>{
-        if(gSilentResolve){
-          let r=gSilentResolve;gSilentResolve=null;
-          if(resp.error)r(null);
-          else{gToken=resp.access_token;gTokenAt=Date.now();r(gToken)}
-          return;
-        }
-        if(resp.error){toast('Google sign-in was cancelled');gStatus('Sign in to back up to Drive');return}
-        gToken=resp.access_token;gTokenAt=Date.now();gOnSignedIn();
-      }
-    });
+function accStatus(t){$('accStatus').textContent=t}
+function setAccountUI(user){
+  curUser=user;
+  $('accCreate').hidden=!!user;$('accSignin').hidden=!!user;$('accSignout').hidden=!user;
+  let chip=$('gChip');
+  if(user){
+    let name=(user.displayName||user.email||'Account').split(' ')[0];
+    $('gName').textContent=name;
+    let img=$('gPic');
+    if(user.photoURL){img.src=user.photoURL;img.alt=name}else img.removeAttribute('src');
+    chip.hidden=false;
+    accStatus(`Signed in as ${user.email} — changes sync to your private database automatically.`);
+  }else{
+    chip.hidden=true;
+    if(CLOUD)accStatus('Create a free account to sync your ledger across devices — a private database only you can read.');
   }
-  return gTokenClient;
 }
-function gSilent(){
-  return new Promise(res=>{
-    let c=gEnsureClient();
-    if(!c)return res(null);
-    gSilentResolve=res;
-    try{c.requestAccessToken({prompt:''})}catch(e){gSilentResolve=null;res(null)}
+
+/* ── auth modal ── */
+let authMode='create';
+function authOpen(mode){
+  authMode=mode;
+  $('authErr').hidden=true;
+  if(mode==='forgot'){
+    $('authTitle').textContent='Reset your password';
+    $('authSub').textContent='Enter your email and we\'ll send a reset link.';
+    $('authPass').closest('.field').hidden=true;
+    $('authPass').required=false;
+    $('authGo').textContent='Send reset link';
+    $('authToggle').textContent='Back to sign in';
+    $('authForgot').hidden=true;
+  }else if(mode==='signin'){
+    $('authTitle').textContent='Welcome back';
+    $('authSub').textContent='Sign in to sync your ledger to your private cloud database.';
+    $('authPass').closest('.field').hidden=false;
+    $('authPass').required=true;
+    $('authGo').textContent='Sign in';
+    $('authToggle').textContent='New here? Create an account';
+    $('authForgot').hidden=false;
+    $('authPass').autocomplete='current-password';
+  }else{
+    $('authTitle').textContent='Create your account';
+    $('authSub').textContent='Your ledger gets a private cloud database — sync across devices, nothing shared.';
+    $('authPass').closest('.field').hidden=false;
+    $('authPass').required=true;
+    $('authGo').textContent='Create account';
+    $('authToggle').textContent='I already have an account — sign in';
+    $('authForgot').hidden=true;
+    $('authPass').autocomplete='new-password';
+  }
+  $('authModal').classList.add('show');
+  setTimeout(()=>$('authEmail').focus(),60);
+}
+function authClose(){$('authModal').classList.remove('show')}
+function authErr(msg){let e=$('authErr');e.textContent=msg;e.hidden=false}
+const AUTH_FRIENDLY={
+  'auth/email-already-in-use':'That email already has an account — try signing in instead.',
+  'auth/invalid-email':'That email address doesn\'t look right.',
+  'auth/weak-password':'Password too weak — use at least 6 characters.',
+  'auth/user-not-found':'No account found with that email.',
+  'auth/wrong-password':'Incorrect password — try again, or use "Forgot password?".',
+  'auth/invalid-credential':'Incorrect email or password.',
+  'auth/too-many-requests':'Too many attempts — wait a minute and try again.',
+  'auth/network-request-failed':'Network problem — check your connection.',
+  'auth/popup-closed-by-user':'The Google popup was closed before finishing.',
+  'auth/popup-blocked':'The popup was blocked — allow popups for this site and retry.',
+  'auth/operation-not-allowed':'This sign-in method isn\'t enabled yet in your Firebase console.'
+};
+
+$('accCreate').onclick=()=>authOpen('create');
+$('accSignin').onclick=()=>authOpen('signin');
+$('authCancel').onclick=authClose;
+$('authModal').onclick=e=>{if(e.target===$('authModal'))authClose()};
+$('authToggle').onclick=()=>{
+  if(authMode==='forgot')authOpen('signin');
+  else authOpen(authMode==='signin'?'create':'signin');
+};
+$('authForgot').onclick=()=>authOpen('forgot');
+$('authForm').onsubmit=e=>{
+  e.preventDefault();
+  if(!CLOUD){authErr('Cloud sync isn\'t configured yet — paste your Firebase config into index.html (search "FIREBASE_CONFIG"), then reload. See the Cloud sync card in My Data.');return}
+  let email=$('authEmail').value.trim(),pass=$('authPass').value;
+  let btn=$('authGo');btn.disabled=true;
+  let done=()=>{btn.disabled=false};
+  let p;
+  if(authMode==='forgot'){
+    p=firebase.auth().sendPasswordResetEmail(email).then(()=>{authClose();toast('Password reset email sent — check your inbox')});
+  }else if(authMode==='signin'){
+    p=firebase.auth().signInWithEmailAndPassword(email,pass);
+  }else{
+    p=firebase.auth().createUserWithEmailAndPassword(email,pass);
+  }
+  p.then(done).catch(err=>{done();authErr(AUTH_FRIENDLY[err.code]||err.message)});
+};
+$('authGoogle').onclick=()=>{
+  if(!CLOUD){authErr('Cloud sync isn\'t configured yet — paste your Firebase config into index.html (search "FIREBASE_CONFIG"), then reload.');return}
+  let provider=new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(err=>authErr(AUTH_FRIENDLY[err.code]||err.message));
+};
+$('accSignout').onclick=()=>askConfirm('Sign out? Your ledger stays on this device, and your cloud copy stays safe in your account.',()=>{
+  if(cloudUnsub){cloudUnsub();cloudUnsub=null}
+  firebase.auth().signOut();
+},'Sign out');
+$('gChip').onclick=()=>askConfirm('Sign out? Your ledger stays on this device, and your cloud copy stays safe in your account.',()=>{
+  if(cloudUnsub){cloudUnsub();cloudUnsub=null}
+  firebase.auth().signOut();
+},'Sign out');
+
+/* ── cloud data flow ── */
+const userCol=()=>firebase.firestore().collection('users').doc(curUser.uid).collection('entries');
+
+async function flushCloud(){
+  if(!CLOUD||!curUser||!dirty.size)return;
+  let db=userCol(),batch=db.batch(),n=0;
+  for(const[d,kind]of dirty){
+    if(kind==='up'){
+      let e=entries[d];if(!e){dirty.delete(d);continue}
+      let rec={gross:Number(e.gross),charges:Number(e.charges||0),symbol:e.symbol||'',note:e.note||'',updatedAt:e.updatedAt||new Date().toISOString()};
+      if(!e.updatedAt)e.updatedAt=rec.updatedAt;
+      batch.set(db.doc(d),rec);
+    }else batch.delete(db.doc(d));
+    n++;if(n===450){await batch.commit();batch=db.batch();n=0}
+  }
+  dirty.clear();
+  try{
+    await batch.commit();
+    localStorage.setItem('tradeledger_last_sync',new Date().toISOString());
+    accStatus(`Signed in as ${curUser.email} · last sync ${when(new Date().toISOString())}`);
+  }catch(err){
+    accStatus('Sync hiccup — changes will retry automatically. ('+err.code+')');
+  }
+}
+addEventListener('online',flushCloud);
+addEventListener('beforeunload',()=>{if(dirty.size&&curUser)flushCloud()});
+
+async function initialMerge(){
+  try{
+    let snap=await userCol().get();
+    let remote={};
+    snap.forEach(doc=>remote[doc.id]=doc.data());
+    let batch=userCol().batch(),touched=false;
+    for(const[d,e]of Object.entries(entries)){
+      let r=remote[d];
+      if(!r){
+        let rec={gross:Number(e.gross),charges:Number(e.charges||0),symbol:e.symbol||'',note:e.note||'',updatedAt:e.updatedAt||new Date().toISOString()};
+        if(!e.updatedAt)e.updatedAt=rec.updatedAt;
+        batch.set(userCol().doc(d),rec);touched=true;
+      }
+      /* remote entries that lose to newer local ones get fixed by the
+         onSnapshot pass below; nothing else to merge here */
+    }
+    if(touched)await batch.commit();
+    for(const[d,r]of Object.entries(remote)){
+      let l=entries[d];
+      if(l&&canon({gross:l.gross,charges:l.charges||0,symbol:l.symbol||'',note:l.note||''})===canon({gross:r.gross,charges:r.charges||0,symbol:r.symbol||'',note:r.note||''}))continue;
+      if(l&&l.updatedAt&&r.updatedAt&&l.updatedAt>=r.updatedAt)continue;
+      if(l&&!l.updatedAt)continue; /* legacy local entries were just uploaded */
+      entries[d]={gross:Number(r.gross),charges:Number(r.charges||0),symbol:r.symbol||'',note:r.note||'',updatedAt:r.updatedAt||new Date().toISOString()};
+    }
+    localStorage.setItem(key,JSON.stringify(entries));
+    renderAll();
+    accStatus(`Signed in as ${curUser.email} — synced ${Object.keys(remote).length} cloud entr${Object.keys(remote).length===1?'y':'ies'}.`);
+  }catch(err){
+    accStatus('Could not load your cloud data ('+err.code+') — working offline.');
+  }
+}
+
+function watchCloud(){
+  if(cloudUnsub)cloudUnsub();
+  cloudUnsub=userCol().onSnapshot(snap=>{
+    if(!curUser)return;
+    snap.docChanges().forEach(ch=>{
+      let d=ch.doc.id;
+      if(ch.type==='removed'){
+        if(!dirty.has(d)){delete entries[d];localStorage.setItem(key,JSON.stringify(entries));renderAll()}
+        return;
+      }
+      if(dirty.has(d))return; /* local edit in flight — it wins */
+      let r=ch.doc.data(),l=entries[d];
+      if(l&&l.updatedAt&&r.updatedAt&&l.updatedAt>=r.updatedAt)return;
+      let same=l&&canon({gross:l.gross,charges:l.charges||0,symbol:l.symbol||'',note:l.note||''})===canon({gross:r.gross,charges:r.charges||0,symbol:r.symbol||'',note:r.note||''});
+      if(same)return;
+      entries[d]={gross:Number(r.gross),charges:Number(r.charges||0),symbol:r.symbol||'',note:r.note||'',updatedAt:r.updatedAt||new Date().toISOString()};
+      localStorage.setItem(key,JSON.stringify(entries));
+      renderAll();
+    });
+  },err=>accStatus('Live sync paused ('+err.code+') — edits still save locally and will sync.'));
+}
+
+if(CLOUD){
+  firebase.initializeApp(FIREBASE_CONFIG);
+  firebase.auth().onAuthStateChanged(user=>{
+    setAccountUI(user);
+    if(user){
+      initialMerge().then(()=>{watchCloud();flushCloud()});
+    }else{
+      if(cloudUnsub){cloudUnsub();cloudUnsub=null}
+      dirty.clear();
+    }
   });
 }
-$('gSignIn').onclick=()=>{
-  if(!GOOGLE_CLIENT_ID){toast('Setup needed — see the note inside the Google Drive card');gStatus('Setup: create an OAuth client ID and paste it into index.html (search “GOOGLE_CLIENT_ID”), then reload. Authorized origin: '+location.origin);return}
-  let c=gEnsureClient();
-  if(!c)return toast('Google did not load — check your connection and reload');
-  gStatus('Opening Google…');
-  c.requestAccessToken();
-};
-function paintChip(){
-  let img=$('gPic'),lbl=$('gName');
-  if(gProfile&&gProfile.picture){img.src=gProfile.picture;img.alt=gProfile.name||'profile'}
-  else img.removeAttribute('src');
-  lbl.textContent=gProfile&&gProfile.name?gProfile.name.split(' ')[0]:'Account';
+
+/* setup notice when Firebase isn't configured yet */
+if(!CLOUD&&!setupShown){
+  setupShown=true;
+  accStatus('Setup: create a free Firebase project, then paste its config into index.html (search "FIREBASE_CONFIG") and reload. Full steps are in README.md. Until then, your ledger keeps working locally.');
 }
-function gSignedInUI(on){
-  $('gSignIn').hidden=on;$('gBackup').hidden=!on;$('gRestore').hidden=!on;$('gChip').hidden=!on;
-  if(on)paintChip();
-}
-async function gOnSignedIn(){
-  gSignedInUI(true);gStatus('Checking your Drive backup…');
-  try{
-    let r=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:gAuth()});
-    if(r.ok){let u=await r.json();gProfile={name:u.name,picture:u.picture};try{localStorage.setItem('tradeledger_google',JSON.stringify(gProfile))}catch(e){}paintChip()}
-  }catch(e){}
-  driveSync();
-}
-async function gApi(){
-  if(!gToken)return null;
-  if(Date.now()-gTokenAt>50*60*1000){let t=await gSilent();if(!t){gSignedInUI(false);gStatus('Session expired — continue with Google again');return null}}
-  return gToken;
-}
-async function driveFind(){
-  if(!await gApi())return null;
-  let r=await fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name,modifiedTime)&pageSize=50',{headers:gAuth()});
-  if(!r.ok)return null;
-  let j=await r.json();
-  let files=(j.files||[]).filter(f=>f.name===DRIVE_NAME).sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime));
-  gFileId=files[0]?files[0].id:null;
-  return files[0]||null;
-}
-async function driveUpload(silent){
-  if(!await gApi())return false;
-  let payload=JSON.stringify({app:'TradeLedger',version:1,exported:new Date().toISOString(),entries});
-  let ok=false;
-  try{
-    if(gFileId){
-      let r=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+gFileId+'?uploadType=media',{method:'PATCH',headers:{...gAuth(),'Content-Type':'application/json'},body:payload});
-      ok=r.ok;
-    }else{
-      let b='tl'+Date.now();
-      let meta={name:DRIVE_NAME,parents:['appDataFolder']};
-      let body=`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${payload}\r\n--${b}--`;
-      let r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{...gAuth(),'Content-Type':'multipart/related; boundary='+b},body});
-      if(r.ok){gFileId=(await r.json()).id;ok=true}
-    }
-  }catch(e){}
-  if(ok){
-    localStorage.setItem('tradeledger_last_backup',new Date().toISOString());
-    renderData();
-    gStatus(silent?('Auto-backed up to Drive · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})):'Backup saved in your Drive');
-    if(!silent)toast('Backed up to Google Drive');
-  }else if(!silent)toast('Drive backup failed — try again');
-  return ok;
-}
-async function driveDownload(){
-  if(!await gApi()||!gFileId)return null;
-  let r=await fetch('https://www.googleapis.com/drive/v3/files/'+gFileId+'?alt=media',{headers:gAuth()});
-  if(!r.ok)return null;
-  try{return await r.json()}catch(e){return null}
-}
-function closeSync(){pendingRemote=null;$('syncModal').classList.remove('show')}
-async function driveSync(){
-  let file=await driveFind();
-  if(!file){
-    if(Object.keys(entries).length){gStatus('Saving your first Drive backup…');await driveUpload(true)}
-    else gStatus('Signed in. Your first backup is written when you record a day.');
-    return;
-  }
-  let remote=await driveDownload();
-  if(!remote){gStatus('Could not read the Drive backup — try Restore');return}
-  let remoteEntries=remote.entries&&typeof remote.entries==='object'?remote.entries:{};
-  const canon=o=>JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));
-  if(canon(remoteEntries)===canon(entries)){gStatus('In sync with Drive · last backup '+when(file.modifiedTime));return}
-  let rCount=Object.keys(remoteEntries).length,lCount=Object.keys(entries).length;
-  let lMod=localStorage.getItem('tradeledger_last_modified');
-  $('syncText').innerHTML=`Drive copy: <b>${rCount} entr${rCount===1?'y':'ies'}</b>, ${when(file.modifiedTime)}<br>This device: <b>${lCount} entr${lCount===1?'y':'ies'}</b>${lMod?', last change '+when(lMod):''}<br>Which version should the ledger keep?`;
-  pendingRemote=remoteEntries;
-  $('syncModal').classList.add('show');
-}
-$('syncDrive').onclick=()=>{if(pendingRemote){entries=pendingRemote;save();renderAll()}closeSync();toast('Restored from Google Drive')};
-$('syncMine').onclick=()=>{pendingRemote=null;$('syncModal').classList.remove('show');driveUpload(false)};
-$('syncLater').onclick=closeSync;
-$('syncModal').onclick=e=>{if(e.target===$('syncModal'))closeSync()};
-$('gBackup').onclick=()=>driveUpload(false);
-$('gRestore').onclick=async()=>{
-  let file=await driveFind();
-  if(!file)return toast('No backup in your Drive yet');
-  let remote=await driveDownload();
-  if(!remote)return toast('Could not read the Drive backup');
-  let remoteEntries=remote.entries&&typeof remote.entries==='object'?remote.entries:{};
-  let rCount=Object.keys(remoteEntries).length;
-  if(!rCount)return toast('The Drive backup is empty');
-  $('syncText').innerHTML=`Replace this device's ledger with the Drive copy?<br><b>${rCount} entr${rCount===1?'y':'ies'}</b>, ${when(file.modifiedTime)}`;
-  pendingRemote=remoteEntries;
-  $('syncModal').classList.add('show');
-};
-$('gChip').onclick=()=>askConfirm('Sign out of Google? The ledger stays on this device, and the backup stays in your Drive.',()=>{
-  try{google.accounts.oauth2.revoke(gToken,()=>{})}catch(e){}
-  gToken=null;gProfile=null;gFileId=null;
-  try{localStorage.removeItem('tradeledger_google')}catch(e){}
-  gSignedInUI(false);gStatus('Signed out. Continue with Google to back up to Drive.');toast('Signed out of Google');
-},'Sign out');
-function scheduleDriveBackup(){
-  if(!gToken)return;
-  clearTimeout(gBackupTimer);
-  gBackupTimer=setTimeout(async()=>{if(await gApi())await driveUpload(true)},4000);
-}
-(async function gInit(){
-  if(!GOOGLE_CLIENT_ID){gStatus('Setup: create an OAuth client ID (search “GOOGLE_CLIENT_ID” in this file), then reload. Authorized origin: '+location.origin);return}
-  try{gProfile=JSON.parse(localStorage.getItem('tradeledger_google')||'null')}catch(e){}
-  if(!gProfile)return;
-  let t=await gSilent();
-  if(t){gSignedInUI(true);gStatus('Checking your Drive backup…');driveSync()}
-})();
 
 renderAll();
 </script>
