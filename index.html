@@ -482,6 +482,7 @@ footer b{color:var(--muted);font-weight:600}
     <div><h1>TradeLedger</h1><p>A daily P&amp;L journal — kept in ink, on paper</p></div>
   </div>
   <div class="actions">
+    <button class="linklike" id="aboutBtn" hidden>About</button>
     <button class="btn icon" id="themeBtn" aria-label="Switch between day and night ink" title="Day / night ink">☾</button>
     <button class="btn" id="exportBtn">Export CSV</button>
     <button class="btn primary" id="addBtn">Add P&amp;L</button>
@@ -766,7 +767,16 @@ function drawdownInfo(list){
   list.forEach(e=>{cum+=e.net;if(cum>peak){peak=cum;peakDate=e.date}let dd=peak-cum;if(dd>maxDD){maxDD=dd;ddDate=e.date;ddPeakDate=peakDate}});
   return{maxDD,ddDate,ddPeakDate};
 }
-function renderAll(){renderJournal();renderData()}
+function renderAll(){renderJournal();renderData();updateAbout()}
+function updateAbout(){
+  /* the About link leads back to the landing page while there's nothing
+     committing the visitor — no account, no entries */
+  $('aboutBtn').hidden=!!(curUser||Object.keys(entries).length);
+}
+$('aboutBtn').onclick=()=>{
+  $('landing').hidden=false;$('app').hidden=true;
+  window.scrollTo(0,0);
+};
 
 /* ── Landing ↔ app ── */
 function enterApp(){
@@ -1245,6 +1255,7 @@ function setAccountUI(user){
     chip.hidden=false;
     accStatus(`Signed in as ${user.email} — changes sync to your private database automatically.`);
     enterApp();
+    updateAbout();
     if(pendingWelcome){pendingWelcome=false;toast('Account created — post your first day to start the ledger')}
   }else{
     chip.hidden=true;
