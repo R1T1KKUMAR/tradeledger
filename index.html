@@ -781,11 +781,11 @@ $('aboutBtn').onclick=()=>{
 
 /* ── Landing ↔ app ── */
 function enterApp(){
-  try{localStorage.setItem('tradeledger_visited','1')}catch(e){}
   $('landing').hidden=true;$('app').hidden=false;
 }
 function landingOK(){
-  try{if(localStorage.getItem('tradeledger_visited'))return false}catch(e){}
+  /* the landing is the site's front door: any signed-out visitor with an
+     empty ledger sees it first */
   return !curUser&&!Object.keys(entries).length;
 }
 
