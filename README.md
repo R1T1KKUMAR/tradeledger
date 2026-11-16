@@ -1,12 +1,12 @@
 # TradeLedger — P&L Journal
 
-A daily trading profit-and-loss journal, kept in ink. A single-page web app with a ledger-sheet design: pale-green paper in day mode, ink-on-slate at night. Built for Indian traders (₹, NIFTY/BANKNIFTY/crypto USDT pairs), but it works for any instrument in any currency spirit.
+A daily trading profit-and-loss journal, kept in a "Candy Pop" design: warm vanilla paper in day mode, ink-on-dark-plum at night, hard offset shadows, sticker badges, and a butter-yellow ticker. Built for Indian traders (₹, NIFTY/BANKNIFTY/crypto USDT pairs), but it works for any instrument in any currency spirit.
 
 **Live: <https://r1t1kkumar.github.io/tradeledger/>**
 
 ## What it does
 
-- **Journal** — one entry per trading day (gross P&L, charges, instrument, note). Net is calculated for you. Net P&L verdict with a rotated rubber-stamp, six-cell summary strip (win rate, best/worst day, average, current streak, max drawdown), a 364-day heatmap of green/red squares, an SVG equity curve with hover tooltip and dashed peak line, a daily-bars chart, dotted-leader breakdown (profit factor, charges paid), and a month-by-month review ledger.
+- **Journal** — one entry per trading day (gross P&L, charges, instrument, note). Net is calculated for you. Net P&L verdict with a rotated sticker stamp, six-cell summary strip (win rate, best/worst day, average, current streak, max drawdown), a 364-day heatmap of tangerine/pink squares, an SVG equity curve with hover tooltip and dashed peak line, a daily-bars chart, dotted-leader breakdown (profit factor, charges paid), and a month-by-month review ledger.
 - **My Data** — searchable, sortable, paginated table of every stored entry; filter by instrument, result, or date range; edit or delete any row (with Undo); instrument chips; CSV + JSON export/import.
 - **Cloud sync (optional)** — create a free account (email + password, or Continue with Google) and your ledger syncs to a private per-user Firestore database: live multi-device sync, newer-wins conflict resolution, offline-first with automatic catch-up.
 - **Backups** — CSV for spreadsheets, JSON full backup/restore, backup-age reminder.
